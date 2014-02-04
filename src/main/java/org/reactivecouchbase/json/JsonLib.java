@@ -1,32 +1,12 @@
 package org.reactivecouchbase.json;
 
 import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.joda.time.DateTime;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import static org.reactivecouchbase.common.Functionnal.*;
 
 /**
  * JsonLib API Usage :
