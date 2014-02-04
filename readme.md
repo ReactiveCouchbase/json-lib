@@ -1,6 +1,8 @@
 JsonLib API Usage
 ======================================
 
+Highly inspired and copied from @mandubian Json lib for Play 2 Scala
+
 Create a Json Object
 --------------------
 
