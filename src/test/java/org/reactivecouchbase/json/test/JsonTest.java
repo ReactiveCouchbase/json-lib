@@ -335,6 +335,16 @@ public class JsonTest {
             ))
         );
 
+        System.out.println(Json.stringify(obj4));
+        System.out.println(Json.prettyPrint(obj4));
+        Json.parse(Json.stringify(obj4));
+        Json.parse(Json.prettyPrint(obj4));
+
+        System.out.println(Json.stringify(expected));
+        System.out.println(Json.prettyPrint(expected));
+        Json.parse(Json.stringify(expected));
+        Json.parse(Json.prettyPrint(expected));
+
         Assert.assertEquals(expected, obj1.merge(obj2).deepMerge(obj4));
         Assert.assertEquals(expected, obj1.deepMerge(obj2).deepMerge(obj5.deepMerge(obj6)));
     }
