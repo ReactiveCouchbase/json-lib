@@ -1,21 +1,32 @@
-package fr.alliancesoftware.json.test;
+package org.reactivecouchbase.json.test;
 
 import com.google.common.base.Function;
 import org.junit.Assert;
 import org.junit.Test;
+import org.reactivecouchbase.json.JsArray;
+import org.reactivecouchbase.json.JsBoolean;
+import org.reactivecouchbase.json.JsNull;
+import org.reactivecouchbase.json.JsNumber;
+import org.reactivecouchbase.json.JsObject;
+import org.reactivecouchbase.json.JsResult;
+import org.reactivecouchbase.json.JsString;
+import org.reactivecouchbase.json.JsSuccess;
+import org.reactivecouchbase.json.JsUndefined;
+import org.reactivecouchbase.json.JsValue;
+import org.reactivecouchbase.json.Json;
+import org.reactivecouchbase.json.Reader;
+import org.reactivecouchbase.json.Writer;
 
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
-import static fr.alliancesoftware.common.Functionnal.T3;
-import static fr.alliancesoftware.common.Functionnal.T4;
-import static fr.alliancesoftware.json.JsonLib.*;
-import static fr.alliancesoftware.json.JsonLib.JsResult.combine;
-import static fr.alliancesoftware.json.JsonLib.ReaderConstraints.*;
+import static org.reactivecouchbase.common.Functionnal.T3;
+import static org.reactivecouchbase.common.Functionnal.T4;
+import static org.reactivecouchbase.json.JsResult.combine;
+import static org.reactivecouchbase.json.JsonLib.*;
+import static org.reactivecouchbase.json.ReaderConstraints.*;
 
 public class JsonTest {
 
-    @XmlRootElement
     public static class User {
         public String name;
         public String surname;

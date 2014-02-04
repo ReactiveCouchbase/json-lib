@@ -1,4 +1,4 @@
-package fr.alliancesoftware.common;
+package org.reactivecouchbase.common;
 
 import com.google.common.base.Function;
 
