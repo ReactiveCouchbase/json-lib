@@ -37,8 +37,8 @@ class Jackson {
         module = new SimpleModule("reactivecouchbase-json", Version.unknownVersion()) {
             @Override
             public void setupModule(SetupContext setupContext) {
-                setupContext.addDeserializers(new PlayDeserializers(Jackson.class.getClassLoader()));
-                setupContext.addSerializers(new PlaySerializers());
+                setupContext.addDeserializers(new JsDeserializers(Jackson.class.getClassLoader()));
+                setupContext.addSerializers(new JsSerializers());
             }
         };
         mapper = new ObjectMapper().registerModule(module);
@@ -138,11 +138,11 @@ class Jackson {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    private static class PlayDeserializers extends Deserializers.Base {
+    private static class JsDeserializers extends Deserializers.Base {
 
         private final ClassLoader classLoader;
 
-        public PlayDeserializers(ClassLoader classLoader) {
+        public JsDeserializers(ClassLoader classLoader) {
             this.classLoader = classLoader;
         }
 
@@ -156,7 +156,7 @@ class Jackson {
         }
     }
 
-    private static class PlaySerializers extends Serializers.Base {
+    private static class JsSerializers extends Serializers.Base {
         @Override
         public JsonSerializer<?> findSerializer(SerializationConfig serializationConfig, JavaType javaType, BeanDescription beanDescription) {
             if (JsValue.class.isAssignableFrom(beanDescription.getBeanClass())) {
