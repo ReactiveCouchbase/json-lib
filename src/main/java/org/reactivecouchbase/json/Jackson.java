@@ -129,19 +129,6 @@ class Jackson {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /*
-    object module extends SimpleModule("PlayJson", Version.unknownVersion()) {
-        override def setupModule(context: SetupContext) {
-            context.addDeserializers(new PlayDeserializers(classLoader))
-            context.addSerializers(new PlaySerializers)
-        }
-    }  */
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
     private static class JsDeserializers extends Deserializers.Base {
 
         private final ClassLoader classLoader;
