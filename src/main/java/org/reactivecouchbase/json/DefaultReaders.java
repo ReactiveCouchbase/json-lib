@@ -19,7 +19,7 @@ public class DefaultReaders {
         };
     }
 
-    public static final <T> Functionnal.Option<Reader<T>> getReader(Class<T> clazz) {
+    public static <T> Functionnal.Option<Reader<T>> getReader(Class<T> clazz) {
         Reader<T> val = (Reader<T>) readers.get(clazz);
         if (val == null) return Functionnal.Option.none();
         return Functionnal.Option.some(val);
