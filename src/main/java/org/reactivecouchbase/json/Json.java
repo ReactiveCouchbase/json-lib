@@ -96,7 +96,7 @@ public class Json {
     }
 
     public static String stringify(JsValue value) {
-        return value.toJsonString();
+        return Jackson.generateFromJsValue(value);
     }
 
     public static String stringify(JsValue value, boolean pretty) {
