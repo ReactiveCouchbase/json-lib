@@ -30,14 +30,18 @@ import java.util.Map;
 
 class Jackson {
 
-    private static SimpleModule module = null;
     private static ObjectMapper mapper = null;
     private static JsonFactory jsonFactory = null;
+
     static {
-        module = new SimpleModule("reactivecouchbase-json", Version.unknownVersion()) {
+        init(Jackson.class.getClassLoader());
+    }
+
+    public static void init(final ClassLoader classLoader) {
+        SimpleModule module = new SimpleModule("reactivecouchbase-json", Version.unknownVersion()) {
             @Override
             public void setupModule(SetupContext setupContext) {
-                setupContext.addDeserializers(new JsDeserializers(Jackson.class.getClassLoader()));
+                setupContext.addDeserializers(new JsDeserializers(classLoader));
                 setupContext.addSerializers(new JsSerializers());
             }
         };
