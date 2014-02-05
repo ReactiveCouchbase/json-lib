@@ -65,7 +65,7 @@ public abstract class JsResult<T> implements Iterable<T> {
             public JsResult<Functionnal.T2<A, B>> apply(final A a) {
                 return res2.map(new Function<B, Functionnal.T2<A, B>>() {
                     public Functionnal.T2<A, B> apply(B b) {
-                        return new Functionnal.T2(a, b);
+                        return new Functionnal.T2<A, B>(a, b);
                     }
                 });
             }
@@ -79,7 +79,7 @@ public abstract class JsResult<T> implements Iterable<T> {
                     public JsResult<Functionnal.T3<A, B, C>> apply(final B b) {
                         return res3.map(new Function<C, Functionnal.T3<A, B, C>>() {
                             public Functionnal.T3<A, B, C> apply(final C c) {
-                                return new Functionnal.T3(a, b, c);
+                                return new Functionnal.T3<A, B, C>(a, b, c);
                             }
                         });
                     }
@@ -97,7 +97,7 @@ public abstract class JsResult<T> implements Iterable<T> {
                             public JsResult<Functionnal.T4<A, B, C, D>> apply(final C c) {
                                 return res4.map(new Function<D, Functionnal.T4<A, B, C, D>>() {
                                     public Functionnal.T4<A, B, C, D> apply(final D d) {
-                                        return new Functionnal.T4(a, b, c, d);
+                                        return new Functionnal.T4<A, B, C, D>(a, b, c, d);
                                     }
                                 });
                             }
@@ -119,7 +119,7 @@ public abstract class JsResult<T> implements Iterable<T> {
                                     public JsResult<Functionnal.T5<A, B, C, D, E>> apply(final D d) {
                                         return res5.map(new Function<E, Functionnal.T5<A, B, C, D, E>>() {
                                             public Functionnal.T5<A, B, C, D, E> apply(final E e) {
-                                                return new Functionnal.T5(a, b, c, d, e);
+                                                return new Functionnal.T5<A, B, C, D, E>(a, b, c, d, e);
                                             }
                                         });
                                     }
@@ -145,7 +145,7 @@ public abstract class JsResult<T> implements Iterable<T> {
                                             public JsResult<Functionnal.T6<A, B, C, D, E, F>> apply(final E e) {
                                                 return res6.map(new Function<F, Functionnal.T6<A, B, C, D, E, F>>() {
                                                     public Functionnal.T6<A, B, C, D, E, F> apply(final F f) {
-                                                        return new Functionnal.T6(a, b, c, d, e, f);
+                                                        return new Functionnal.T6<A, B, C, D, E, F>(a, b, c, d, e, f);
                                                     }
                                                 });
                                             }
@@ -175,7 +175,7 @@ public abstract class JsResult<T> implements Iterable<T> {
                                                     public JsResult<Functionnal.T7<A, B, C, D, E, F, G>> apply(final F f) {
                                                         return res7.map(new Function<G, Functionnal.T7<A, B, C, D, E, F, G>>() {
                                                             public Functionnal.T7<A, B, C, D, E, F, G> apply(final G g) {
-                                                                return new Functionnal.T7(a, b, c, d, e, f, g);
+                                                                return new Functionnal.T7<A, B, C, D, E, F, G>(a, b, c, d, e, f, g);
                                                             }
                                                         });
                                                     }
@@ -209,7 +209,7 @@ public abstract class JsResult<T> implements Iterable<T> {
                                                             public JsResult<Functionnal.T8<A, B, C, D, E, F, G, H>> apply(final G g) {
                                                                 return res8.map(new Function<H, Functionnal.T8<A, B, C, D, E, F, G, H>>() {
                                                                     public Functionnal.T8<A, B, C, D, E, F, G, H> apply(final H h) {
-                                                                        return new Functionnal.T8(a, b, c, d, e, f, g, h);
+                                                                        return new Functionnal.T8<A, B, C, D, E, F, G, H>(a, b, c, d, e, f, g, h);
                                                                     }
                                                                 });
                                                             }
@@ -247,7 +247,7 @@ public abstract class JsResult<T> implements Iterable<T> {
                                                                     public JsResult<Functionnal.T9<A, B, C, D, E, F, G, H, I>> apply(final H h) {
                                                                         return res9.map(new Function<I, Functionnal.T9<A, B, C, D, E, F, G, H, I>>() {
                                                                             public Functionnal.T9<A, B, C, D, E, F, G, H, I> apply(final I i) {
-                                                                                return new Functionnal.T9(a, b, c, d, e, f, g, h, i);
+                                                                                return new Functionnal.T9<A, B, C, D, E, F, G, H, I>(a, b, c, d, e, f, g, h, i);
                                                                             }
                                                                         });
                                                                     }
@@ -289,7 +289,7 @@ public abstract class JsResult<T> implements Iterable<T> {
                                                                             public JsResult<Functionnal.T10<A, B, C, D, E, F, G, H, I, J>> apply(final I i) {
                                                                                 return res10.map(new Function<J, Functionnal.T10<A, B, C, D, E, F, G, H, I, J>>() {
                                                                                     public Functionnal.T10<A, B, C, D, E, F, G, H, I, J> apply(final J j) {
-                                                                                        return new Functionnal.T10(a, b, c, d, e, f, g, h, i, j);
+                                                                                        return new Functionnal.T10<A, B, C, D, E, F, G, H, I, J>(a, b, c, d, e, f, g, h, i, j);
                                                                                     }
                                                                                 });
                                                                             }
