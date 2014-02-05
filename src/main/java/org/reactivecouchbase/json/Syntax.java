@@ -11,7 +11,7 @@ import java.util.Map;
 public class Syntax {
 
     /**
-     * To wrap already JSON formatted data
+     * To wrap already JSON formatted data. Try to avoid it !!!
      */
     public static class JsonFormattedValue extends JsValue {
         public final String value;
