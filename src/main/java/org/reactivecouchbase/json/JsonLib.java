@@ -163,7 +163,7 @@ public class JsonLib {
             if (value == null) throw new IllegalArgumentException("Value can't be null !");
             this.value = value;
         }
-        public String toJsonString() {
+        String toJsonString() {
             return value;
         }
         public String toString() {

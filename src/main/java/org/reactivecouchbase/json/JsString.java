@@ -16,7 +16,7 @@ public class JsString extends JsValue implements java.lang.Comparable<JsString> 
         return value.compareTo(jsString.value);
     }
 
-    public String toJsonString() {
+    String toJsonString() {
         return new TextNode(value).toString();
     }
     public String toString() {

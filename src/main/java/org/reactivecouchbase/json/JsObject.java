@@ -98,7 +98,7 @@ public class JsObject extends JsValue implements Iterable<Map.Entry<String, JsVa
         return vals;
     }
     @Override
-    public String toJsonString() {
+    String toJsonString() {
         return "{" + toJsonPairString() + "}";
     }
 
@@ -106,7 +106,7 @@ public class JsObject extends JsValue implements Iterable<Map.Entry<String, JsVa
         return "JsObject(" + toJsonPairString() + ")";
     }
 
-    public String toJsonPairString() {
+    String toJsonPairString() {
         return Joiner.on(",").join(Iterables.transform(values.entrySet(), new Function<Map.Entry<String, JsValue>, String>() {
             public String apply(Map.Entry<String, JsValue> entry) {
                 return "\"" + entry.getKey() + "\":" + entry.getValue().toJsonString();

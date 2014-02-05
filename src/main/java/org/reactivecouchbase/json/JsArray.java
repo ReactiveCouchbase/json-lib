@@ -96,7 +96,7 @@ public class JsArray extends JsValue implements Iterable<JsValue> {
         };
         return new JsArray(Lists.newArrayList(Iterables.filter(values, p)));
     }
-    public String toJsonString() {
+    String toJsonString() {
         return "[" + Joiner.on(",").join(Lists.transform(values, new Function<JsValue, String>() {
             public String apply(JsValue jsValue) {
                 return jsValue.toJsonString();

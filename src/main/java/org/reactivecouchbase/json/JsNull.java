@@ -1,7 +1,7 @@
 package org.reactivecouchbase.json;
 
 public class JsNull extends JsValue {
-    public String toJsonString() {
+    String toJsonString() {
         return "null";
     }
     public String toString() {

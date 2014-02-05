@@ -29,7 +29,7 @@ public class JsNumber extends JsValue implements java.lang.Comparable<JsNumber> 
     public int compareTo(JsNumber jsNumber) {
         return value.compareTo(jsNumber.value);
     }
-    public String toJsonString() {
+    String toJsonString() {
         return value.toString();
     }
     public String toString() {

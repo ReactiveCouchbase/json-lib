@@ -12,7 +12,7 @@ public class JsBoolean extends JsValue implements java.lang.Comparable<JsBoolean
         return value.compareTo(aBoolean.value);
     }
 
-    public String toJsonString() {
+    String toJsonString() {
         if (value == null) {
             return Boolean.FALSE.toString();
         }

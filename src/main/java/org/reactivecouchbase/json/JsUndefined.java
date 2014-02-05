@@ -2,7 +2,7 @@ package org.reactivecouchbase.json;
 
 public class JsUndefined extends JsValue {
 
-    public String toJsonString() {
+    String toJsonString() {
         return "undefined";
     }
 
