@@ -89,7 +89,7 @@ Custom Json reading and validating
 
 ```java
 import org.reactivecouchbase.json.*
-import static org.reactivecouchbase.json.JsonLib.*
+import static org.reactivecouchbase.json.Syntax.*
 import static org.reactivecouchbase.json.JsResult.*
 import static org.reactivecouchbase.json.DefaultReaders.*
 import static org.reactivecouchbase.json.ReaderConstraints.*
