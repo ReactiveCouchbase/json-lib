@@ -472,26 +472,4 @@ public class JsonTest {
         Assert.assertNotEquals(expected, wrongobj1);
         Assert.assertNotEquals(expected, wrongobj2);
     }
-
-
-    public void testMatt() {
-
-        String jsonn = "[{\"column1\":\"value1\", \"column3\":\"value3\", \"column2\":\"value2\"}, {\"column1\":\"value1\", \"column3\":\"value3\", \"column2\":\"value2\"}]";
-        JsValue jsValue = Json.parse(jsonn);
-
-        for(JsArray array : jsValue.asOpt(JsArray.class)) {
-            for(JsValue val : array.values) {
-                JsObject obj = val.as(JsObject.class);
-                obj.field("column3").as(String.class);
-            }
-        }
-
-        List<String> list = jsValue.as(JsArray.class).mapWith(new Reader<String>() {
-            @Override
-            public JsResult<String> read(JsValue value) {
-                return new JsSuccess<String>(value.as(JsObject.class).field("column2").as(String.class));
-            }
-        });
-
-    }
 }
