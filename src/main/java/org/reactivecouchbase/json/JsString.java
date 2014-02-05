@@ -3,7 +3,9 @@ package org.reactivecouchbase.json;
 import com.fasterxml.jackson.databind.node.TextNode;
 
 public class JsString extends JsValue implements java.lang.Comparable<JsString> {
+
     public final String value;
+
     public JsString(String value) {
         if (value == null) {
             value = "";
@@ -19,6 +21,7 @@ public class JsString extends JsValue implements java.lang.Comparable<JsString> 
     String toJsonString() {
         return new TextNode(value).toString();
     }
+
     public String toString() {
         return "JsString(" + value + ")";
     }
@@ -27,11 +30,8 @@ public class JsString extends JsValue implements java.lang.Comparable<JsString> 
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof JsString)) return false;
-
         JsString jsString = (JsString) o;
-
         if (!value.equals(jsString.value)) return false;
-
         return true;
     }
 

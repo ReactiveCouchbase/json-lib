@@ -17,13 +17,16 @@ import java.util.Set;
 
 public class JsObject extends JsValue implements Iterable<Map.Entry<String, JsValue>> {
     public final Map<String, JsValue> values;
+
     public JsObject(Map<String, JsValue> values) {
         if (values == null) throw new IllegalArgumentException("Values can't be null !");
         this.values = values;
     }
+
     public JsObject() {
         this.values = new HashMap<String, JsValue>();
     }
+
     public JsObject merge(JsObject with) {
         if (with == null) throw new IllegalArgumentException("Value can't be null !");
         Map<String, JsValue> newValues = new HashMap<String, JsValue>();
@@ -50,29 +53,35 @@ public class JsObject extends JsValue implements Iterable<Map.Entry<String, JsVa
         }
         return new JsObject(newValues);
     }
+
     public Set<String> fieldsSet() {
         return values.keySet();
     }
+
     public Collection<JsValue> values() {
         return values.values();
     }
+
     public JsObject add(JsObject jsObject) {
         if (jsObject == null) return new JsObject(values);
         Map<String, JsValue> newValues = values;
         newValues.putAll(jsObject.values);
         return new JsObject(newValues);
     }
+
     public JsObject remove(String field) {
         if (field == null) return new JsObject(values);
         values.remove(field);
         return new JsObject(values);
     }
+
     public JsValue field(String field) {
-        if (field == null) return JsonLib.JSUNDEFINED_INSTANCE;
+        if (field == null) return Syntax.JSUNDEFINED_INSTANCE;
         JsValue value = values.get(field);
-        if (value == null) return JsonLib.JSUNDEFINED_INSTANCE;
+        if (value == null) return Syntax.JSUNDEFINED_INSTANCE;
         return value;
     }
+
     public Functionnal.Option<JsValue> fieldAsOpt(String field) {
         if (field == null) return Functionnal.Option.none();
         JsValue val = values.get(field);
@@ -81,6 +90,7 @@ public class JsObject extends JsValue implements Iterable<Map.Entry<String, JsVa
         }
         return Functionnal.Option.some(val);
     }
+
     public List<JsValue> fields(String fieldName) {
         if (fieldName == null) return Collections.emptyList();
         List<JsValue> vals = new ArrayList<JsValue>();
@@ -97,6 +107,7 @@ public class JsObject extends JsValue implements Iterable<Map.Entry<String, JsVa
         }
         return vals;
     }
+
     @Override
     String toJsonString() {
         return "{" + toJsonPairString() + "}";
@@ -127,9 +138,11 @@ public class JsObject extends JsValue implements Iterable<Map.Entry<String, JsVa
     public int hashCode() {
         return values.hashCode();
     }
+
     public Boolean exists(String field) {
         return values.containsKey(field);
     }
+
     public JsObject mapProperties(Function<Functionnal.Tuple<String, JsValue>, JsValue> block) {
         Map<String, JsValue> resulting = new HashMap<String, JsValue>();
         for (Map.Entry<String, JsValue> entry : values.entrySet()) {

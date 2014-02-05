@@ -1,7 +1,9 @@
 package org.reactivecouchbase.json;
 
 public class JsBoolean extends JsValue implements java.lang.Comparable<JsBoolean> {
+
     public final Boolean value;
+
     public JsBoolean(Boolean value) {
         if (value == null) throw new IllegalArgumentException("Value can't be null !");
         this.value = value;
@@ -18,6 +20,7 @@ public class JsBoolean extends JsValue implements java.lang.Comparable<JsBoolean
         }
         return value.toString();
     }
+
     public String toString() {
         return "JsBoolean(" + value + ")";
     }

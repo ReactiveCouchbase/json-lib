@@ -7,23 +7,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class JsResult<T> implements Iterable<T> {
+
     public abstract T get();
+
     public abstract Functionnal.Option<T> getOpt();
+
     public abstract JsResult<T> getOrElse(JsResult<T> result);
+
     public abstract T getValueOrElse(T result);
+
     public abstract T getValueOrElse(Throwable result);
+
     public abstract <B> JsResult<B> map(Function<T, B> map);
+
     public abstract <B> JsResult<B> flatMap(Function<T, JsResult<B>> map);
+
     public abstract JsResult<T> filter(Function<T, Boolean> predicate);
+
     public abstract JsResult<T> filterNot(Function<T, Boolean> predicate);
+
     public abstract JsResult<T> filter(Function<T, Boolean> predicate, JsResult<T> val, List<Throwable> errors);
+
     public abstract JsResult<T> filterNot(Function<T, Boolean> predicate, JsResult<T> val, List<Throwable> errors);
+
     public abstract boolean hasErrors();
+
     public abstract boolean isErrors();
+
     public abstract boolean isSuccess();
+
     public abstract int countErrors();
+
     public abstract Functionnal.Option<JsError<T>> asError();
+
     public abstract Functionnal.Option<JsSuccess<T>> asSuccess();
+
     public abstract T orError(Throwable t);
 
     private static <T> JsResult<T> populateErrs(JsResult<T> finalResult, JsResult<?>... results) {

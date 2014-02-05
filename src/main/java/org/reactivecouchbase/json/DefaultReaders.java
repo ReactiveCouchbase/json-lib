@@ -24,6 +24,7 @@ public class DefaultReaders {
         if (val == null) return Functionnal.Option.none();
         return Functionnal.Option.some(val);
     }
+
     public static final Reader<JsObject> JS_OBJECT_READER = new Reader<JsObject>() {
         @Override
         public JsResult<JsObject> read(JsValue value) {
@@ -33,6 +34,7 @@ public class DefaultReaders {
             return new JsError<JsObject>(new IllegalAccessError("Not a JsObject"));
         }
     };
+
     public static final Reader<JsArray> JS_ARRAY_READER = new Reader<JsArray>() {
         @Override
         public JsResult<JsArray> read(JsValue value) {
@@ -42,6 +44,7 @@ public class DefaultReaders {
             return new JsError<JsArray>(new IllegalAccessError("Not a JsArray"));
         }
     };
+
     public static final Reader<JsBoolean> JS_BOOLEAN_READER = new Reader<JsBoolean>() {
         @Override
         public JsResult<JsBoolean> read(JsValue value) {
@@ -51,6 +54,7 @@ public class DefaultReaders {
             return new JsError<JsBoolean>(new IllegalAccessError("Not a JsBoolean"));
         }
     };
+
     public static final Reader<JsPair> JS_PAIR_READER = new Reader<JsPair>() {
         @Override
         public JsResult<JsPair> read(JsValue value) {
@@ -60,6 +64,7 @@ public class DefaultReaders {
             return new JsError<JsPair>(new IllegalAccessError("Not a JsPair"));
         }
     };
+
     public static final Reader<JsNull> JS_NULL_READER = new Reader<JsNull>() {
         @Override
         public JsResult<JsNull> read(JsValue value) {
@@ -69,6 +74,7 @@ public class DefaultReaders {
             return new JsError<JsNull>(new IllegalAccessError("Not a JsNull"));
         }
     };
+
     public static final Reader<JsUndefined> JS_UNDEFINED_READER = new Reader<JsUndefined>() {
         @Override
         public JsResult<JsUndefined> read(JsValue value) {
@@ -78,15 +84,17 @@ public class DefaultReaders {
             return new JsError<JsUndefined>(new IllegalAccessError("Not a JsUndefined"));
         }
     };
-    public static final Reader<JsonLib.JsonFormattedValue> JS_FORMATTED_READER = new Reader<JsonLib.JsonFormattedValue>() {
+
+    public static final Reader<Syntax.JsonFormattedValue> JS_FORMATTED_READER = new Reader<Syntax.JsonFormattedValue>() {
         @Override
-        public JsResult<JsonLib.JsonFormattedValue> read(JsValue value) {
-            if (value.is(JsonLib.JsonFormattedValue.class)) {
-                return new JsSuccess<JsonLib.JsonFormattedValue>((JsonLib.JsonFormattedValue) value);
+        public JsResult<Syntax.JsonFormattedValue> read(JsValue value) {
+            if (value.is(Syntax.JsonFormattedValue.class)) {
+                return new JsSuccess<Syntax.JsonFormattedValue>((Syntax.JsonFormattedValue) value);
             }
-            return new JsError<JsonLib.JsonFormattedValue>(new IllegalAccessError("Not a JsonFormattedValue"));
+            return new JsError<Syntax.JsonFormattedValue>(new IllegalAccessError("Not a JsonFormattedValue"));
         }
     };
+
     public static final Reader<JsNumber> JS_NUMBER_READER = new Reader<JsNumber>() {
         @Override
         public JsResult<JsNumber> read(JsValue value) {
@@ -96,6 +104,7 @@ public class DefaultReaders {
             return new JsError<JsNumber>(new IllegalAccessError("Not a JsNumber"));
         }
     };
+
     public static final Reader<JsString> JS_STRING_READER = new Reader<JsString>() {
         @Override
         public JsResult<JsString> read(JsValue value) {
@@ -105,6 +114,7 @@ public class DefaultReaders {
             return new JsError<JsString>(new IllegalAccessError("Not a JsString"));
         }
     };
+
     public static final Reader<Boolean> BOOLEAN_READER = new Reader<Boolean>() {
         @Override
         public JsResult<Boolean> read(JsValue value) {
@@ -114,6 +124,7 @@ public class DefaultReaders {
             return new JsError<Boolean>(new IllegalAccessError("Not a JsBoolean"));
         }
     };
+
     public static final Reader<String> STRING_READER = new Reader<String>() {
         @Override
         public JsResult<String> read(JsValue value) {
@@ -123,6 +134,7 @@ public class DefaultReaders {
             return new JsError<String>(new IllegalAccessError("Not a JsString"));
         }
     };
+
     public static final Reader<Double> DOUBLE_READER = new Reader<Double>() {
         @Override
         public JsResult<Double> read(JsValue value) {
@@ -132,6 +144,7 @@ public class DefaultReaders {
             return new JsError<Double>(new IllegalAccessError("Not a JsNumber"));
         }
     };
+
     public static final Reader<Long> LONG_READER = new Reader<Long>() {
         @Override
         public JsResult<Long> read(JsValue value) {
@@ -141,6 +154,7 @@ public class DefaultReaders {
             return new JsError<Long>(new IllegalAccessError("Not a JsNumber"));
         }
     };
+
     public static final Reader<Integer> INTEGER_READER = new Reader<Integer>() {
         @Override
         public JsResult<Integer> read(JsValue value) {
@@ -150,6 +164,7 @@ public class DefaultReaders {
             return new JsError<Integer>(new IllegalAccessError("Not a JsNumber"));
         }
     };
+
     public static final Reader<BigDecimal> BIGDEC_READER = new Reader<BigDecimal>() {
         @Override
         public JsResult<BigDecimal> read(JsValue value) {
@@ -159,6 +174,7 @@ public class DefaultReaders {
             return new JsError<BigDecimal>(new IllegalAccessError("Not a JsNumber"));
         }
     };
+
     public static final Reader<BigInteger> BIGINT_READER = new Reader<BigInteger>() {
         @Override
         public JsResult<BigInteger> read(JsValue value) {
@@ -168,6 +184,7 @@ public class DefaultReaders {
             return new JsError<BigInteger>(new IllegalAccessError("Not a JsNumber"));
         }
     };
+
     public static final Reader<DateTime> DATETIME_READER = new Reader<DateTime>() {
         @Override
         public JsResult<DateTime> read(JsValue value) {
@@ -181,12 +198,14 @@ public class DefaultReaders {
             return new JsError<DateTime>(new IllegalAccessError("Not a JsString"));
         }
     };
+
     public static final Reader<JsValue> JSVALUE_READER = new Reader<JsValue>() {
         @Override
         public JsResult<JsValue> read(JsValue value) {
             return new JsSuccess<JsValue>(value);
         }
     };
+
     static final Map<Class<?>, Reader<?>> readers = new HashMap<Class<?>, Reader<?>>() {{
         put(JsObject.class, JS_OBJECT_READER);
         put(JsArray.class, JS_ARRAY_READER);
@@ -194,8 +213,8 @@ public class DefaultReaders {
         put(JsPair.class, JS_PAIR_READER);
         put(JsNull.class, JS_NULL_READER);
         put(JsUndefined.class, JS_UNDEFINED_READER);
-        put(JsonLib.JsonFormattedValue.class, JS_FORMATTED_READER);
-        put(JsNumber.class , JS_NUMBER_READER);
+        put(Syntax.JsonFormattedValue.class, JS_FORMATTED_READER);
+        put(JsNumber.class, JS_NUMBER_READER);
         put(JsString.class, JS_STRING_READER);
         put(Boolean.class, BOOLEAN_READER);
         put(String.class, STRING_READER);

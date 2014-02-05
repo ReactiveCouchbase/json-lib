@@ -224,7 +224,7 @@ class Jackson {
 
         @Override
         public JsValue getNullValue() {
-            return JsonLib.JSNULL_INSTANCE;
+            return Syntax.JSNULL_INSTANCE;
         }
 
         @Override
@@ -233,7 +233,7 @@ class Jackson {
                 jp.nextToken();
             }
             JsonToken token = jp.getCurrentToken();
-            JsValue value = JsonLib.nill();
+            JsValue value = Syntax.nill();
             if (token.equals(JsonToken.VALUE_NUMBER_FLOAT) || token.equals(JsonToken.VALUE_NUMBER_INT)) {
                 value = new JsNumber(jp.getDecimalValue());
             }
@@ -247,7 +247,7 @@ class Jackson {
                 value = new JsBoolean(false);
             }
             if (token.equals(JsonToken.VALUE_NULL)) {
-                value = JsonLib.JSNULL_INSTANCE;
+                value = Syntax.JSNULL_INSTANCE;
             }
             if (token.equals(JsonToken.START_OBJECT)) {
                 jp.nextToken();

@@ -22,7 +22,7 @@ import java.util.List;
 import static org.reactivecouchbase.common.Functionnal.T3;
 import static org.reactivecouchbase.common.Functionnal.T4;
 import static org.reactivecouchbase.json.JsResult.combine;
-import static org.reactivecouchbase.json.JsonLib.*;
+import static org.reactivecouchbase.json.Syntax.*;
 import static org.reactivecouchbase.json.ReaderConstraints.*;
 
 public class JsonTest {

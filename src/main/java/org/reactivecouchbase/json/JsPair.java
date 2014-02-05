@@ -5,31 +5,31 @@ import java.math.BigInteger;
 
 public class JsPair extends JsObject {
     public JsPair(String name, JsValue value) {
-        super(JsonLib.asMap(name, value));
+        super(Syntax.asMap(name, value));
     }
     public JsPair(String name, Long value) {
-        super(JsonLib.asMap(name, new JsNumber(value)));
+        super(Syntax.asMap(name, new JsNumber(value)));
     }
     public JsPair(String name, Integer value) {
-        super(JsonLib.asMap(name, new JsNumber(value)));
+        super(Syntax.asMap(name, new JsNumber(value)));
     }
     public JsPair(String name, Double value) {
-        super(JsonLib.asMap(name, new JsNumber(value)));
+        super(Syntax.asMap(name, new JsNumber(value)));
     }
     public JsPair(String name, BigDecimal value) {
-        super(JsonLib.asMap(name, new JsNumber(value)));
+        super(Syntax.asMap(name, new JsNumber(value)));
     }
     public JsPair(String name, BigInteger value) {
-        super(JsonLib.asMap(name, new JsNumber(value)));
+        super(Syntax.asMap(name, new JsNumber(value)));
     }
     public JsPair(String name) {
-        super(JsonLib.asMap(name, JsonLib.JSNULL_INSTANCE));
+        super(Syntax.asMap(name, Syntax.JSNULL_INSTANCE));
     }
     public JsPair(String name, String value) {
-        super(JsonLib.asMap(name, new JsString(value)));
+        super(Syntax.asMap(name, new JsString(value)));
     }
     public JsPair(String name, Boolean value) {
-        super(JsonLib.asMap(name, new JsBoolean(value)));
+        super(Syntax.asMap(name, new JsBoolean(value)));
     }
     public String toString() {
         return super.toString();

@@ -9,16 +9,20 @@ import com.google.common.collect.Lists;
 import java.util.List;
 
 public class ReaderConstraints {
+
     public static Reader<String> email(final Reader<String> reads) {
         return matches("[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[a-zA-Z0-9](?:[\\w-]*[\\w])?", reads);
     }
+
     public static Reader<String> url(final Reader<String> reads) {
         return matches("^(http|https|ftp)\\://[a-zA-Z0-9\\-\\.]+\\.[a-z" +
                 "A-Z]{2,3}(:[a-zA-Z0-9]*)?/?([a-zA-Z0-9\\-\\._\\?\\,\\'/\\\\\\+&amp;%\\$#\\=~\\!])*$", reads);
     }
+
     public static Reader<String> phone(final Reader<String> reads) {
         return matches("^([\\+][0-9]{1,3}([ \\.\\-]))?([\\(]{1}[0-9]{2,6}[\\)])?([0-9 \\.\\-/]{3,20})((x|ext|extension)[ ]?[0-9]{1,4})?$", reads);
     }
+
     public static Reader<Integer> max(final int max, final Reader<Integer> reads) {
         return new Reader<Integer>() {
             @Override
@@ -33,6 +37,7 @@ public class ReaderConstraints {
             }
         };
     }
+
     public static Reader<Integer> min(final int min, final Reader<Integer> reads) {
         return new Reader<Integer>() {
             @Override
@@ -47,6 +52,7 @@ public class ReaderConstraints {
             }
         };
     }
+
     public static Reader<String> matches(final String pattern, final Reader<String> reads) {
         return new Reader<String>() {
             @Override
@@ -61,6 +67,7 @@ public class ReaderConstraints {
             }
         };
     }
+
     public static <A> Reader<A> verifying(final Predicate<A> p, final Reader<A> reads) {
         return new Reader<A>() {
             @Override

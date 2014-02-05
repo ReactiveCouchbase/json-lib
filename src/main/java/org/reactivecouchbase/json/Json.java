@@ -35,7 +35,7 @@ public class Json {
             public JsResult<T> read(JsValue value) {
                 try {
                     return new JsSuccess<T>(Jackson.fromJson(Jackson.jsValueToJsonNode(value), clazz));
-                } catch(Exception e) {
+                } catch (Exception e) {
                     return new JsError<T>(Collections.<Throwable>singletonList(e));
                 }
             }
@@ -86,6 +86,7 @@ public class Json {
         List<Object> objs = Arrays.asList(objects);
         return array(objs);
     }
+
     public static <T> JsArray arr(Iterable<T> collection, final Writer<T> writer) {
         return Json.arr(Iterables.transform(collection, new Function<T, JsValue>() {
             @Override

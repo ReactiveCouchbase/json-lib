@@ -9,11 +9,13 @@ import java.util.Iterator;
 import java.util.List;
 
 public class JsSuccess<T> extends JsResult<T> {
+
     private final T value;
 
     public JsSuccess(T value) {
         this.value = value;
     }
+
     public Functionnal.Option<JsError<T>> asError() {
         return Functionnal.Option.none();
     }
@@ -21,6 +23,7 @@ public class JsSuccess<T> extends JsResult<T> {
     public Functionnal.Option<JsSuccess<T>> asSuccess() {
         return Functionnal.Option.some(this);
     }
+
     public boolean hasErrors() {
         return false;
     }

@@ -65,7 +65,7 @@ public abstract class JsValue implements Serializable {
     }
 
     public JsValue field(String field) {
-        return JsonLib.JSUNDEFINED_INSTANCE;
+        return Syntax.JSUNDEFINED_INSTANCE;
     }
 
     public Functionnal.Option<JsValue> fieldAsOpt(String field) {
@@ -85,6 +85,6 @@ public abstract class JsValue implements Serializable {
     }
 
     public JsValue get(int idx) {
-        return JsonLib.JSUNDEFINED_INSTANCE;
+        return Syntax.JSUNDEFINED_INSTANCE;
     }
 }
