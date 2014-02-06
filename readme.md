@@ -80,8 +80,8 @@ Json array manipulation
 -----------------------
 
 ```java
-Json.stringify(Json.arr("val1", "val2", "val3").append(Json.arr("val4", "val5")).add("val6)) // ["val1","val2","val3","val4","val5","val6"]
-Json.arr("val1", "val2", "val3").append(Json.arr("val4", "val5")).add("val6).get(5) // val6
+Json.stringify(Json.arr("val1", "val2", "val3").append(Json.arr("val4", "val5")).add("val6")) // ["val1","val2","val3","val4","val5","val6"]
+Json.arr("val1", "val2", "val3").append(Json.arr("val4", "val5")).add("val6").get(5) // val6
 ```
 
 Custom Json reading and validating
