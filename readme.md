@@ -1,7 +1,9 @@
-JsonLib API Usage
+JsonLib
 ======================================
 
 Highly inspired and copied from @mandubian (Pascal Voitot) Json lib for Play 2 Scala
+
+Will be the standard Json library for the ReactiveCouchbase Java wrapper
 
 Create a Json Object
 --------------------
