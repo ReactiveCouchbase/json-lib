@@ -101,10 +101,10 @@ Reader<User> userReader = new Reader<User>() {
      public JsResult<User> read(JsValue value) {
          try {
              return new JsSuccess<User>(new User(
-                 value.field("name").as(String.class),
-                 value.field("surname").as(String.class),
-                 value.field("age").as(Integer.class, max( 99, min( 18, Json.reads(Integer.class) ))),
-                 value.field("email").as(String.class, matches( "^[_a-z0-9-]+(\\.[_a-z0-9-]+)*@[a-z0-9-]+(\\.[a-z0-9-]+)+$" , Json.reads(String.class) ))
+                 value.field("name").read(String.class),
+                 value.field("surname").read(String.class),
+                 value.field("age").read(Integer.class, max( 99, min( 18, Json.reads(Integer.class) ))),
+                 value.field("email").read(String.class, matches( "^[_a-z0-9-]+(\\.[_a-z0-9-]+)*@[a-z0-9-]+(\\.[a-z0-9-]+)+$" , Json.reads(String.class) ))
              ));
          } catch (Exception e) {
              return new JsError<T>(new IllegalStateException("Ooops"));
