@@ -1,5 +1,6 @@
 package org.reactivecouchbase.json;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import org.reactivecouchbase.common.Functionnal;
 
@@ -86,5 +87,9 @@ public abstract class JsValue implements Serializable {
 
     public JsValue get(int idx) {
         return Syntax.JSUNDEFINED_INSTANCE;
+    }
+
+    public JsonNode toJsonNode() {
+        return Jackson.jsValueToJsonNode(this);
     }
 }

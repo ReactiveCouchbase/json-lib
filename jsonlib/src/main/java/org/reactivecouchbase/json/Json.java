@@ -1,5 +1,6 @@
 package org.reactivecouchbase.json;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -123,5 +124,9 @@ public class Json {
 
     public static String prettyPrint(JsValue value) {
         return Jackson.prettify(value);
+    }
+
+    public static JsValue fromJsonNode(JsonNode node) {
+        return Jackson.jsonNodeToJsValue(node);
     }
 }
