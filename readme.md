@@ -90,11 +90,11 @@ Custom Json reading and validating
 ----------------------------------
 
 ```java
-import org.reactivecouchbase.json.*
-import static org.reactivecouchbase.json.Syntax.*
-import static org.reactivecouchbase.json.JsResult.*
-import static org.reactivecouchbase.json.DefaultReaders.*
-import static org.reactivecouchbase.json.ReaderConstraints.*
+import org.reactivecouchbase.json.*;
+import static org.reactivecouchbase.json.Syntax.*;
+import static org.reactivecouchbase.json.JsResult.*;
+import static org.reactivecouchbase.json.DefaultReaders.*;
+import static org.reactivecouchbase.json.ReaderConstraints.*;
 
 Reader<User> userReader = new Reader<User>() {
      @Override
