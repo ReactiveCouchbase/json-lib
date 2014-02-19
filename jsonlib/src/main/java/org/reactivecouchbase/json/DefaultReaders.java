@@ -6,9 +6,24 @@ import org.reactivecouchbase.common.Functionnal;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DefaultReaders {
+
+    public static <T> Reader<List<T>> seq(final Reader<T> reader) {
+        return new Reader<List<T>>() {
+            @Override
+            public JsResult<List<T>> read(JsValue value) {
+                try {
+                    JsArray array = value.as(JsArray.class);
+                    return new JsSuccess<List<T>>(array.mapWith(reader));
+                } catch (Exception e) {
+                    return new JsError<List<T>>(e);
+                }
+            }
+        };
+    }
 
     public static <A> Reader<A> pure(final A a) {
         return new Reader<A>() {
