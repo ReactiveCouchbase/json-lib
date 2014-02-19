@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
+import org.joda.time.DateTime;
+import java.util.Date;
 
 public class Syntax {
 
@@ -34,6 +36,27 @@ public class Syntax {
 
     public static JsPair $(String name, JsValue value) {
         return new JsPair(name, value);
+    }
+
+    public static JsPair $(String name, Date value) {
+        if (value == null) return _(name);
+        return new JsPair(name, new DateTime(value).toString());
+    }
+    public static JsPair $(String name, DateTime value) {
+        if (value == null) return _(name);
+        return new JsPair(name, value.toString());
+    }
+    public static JsPair $(String name, Date value, String format) {
+        if (value == null) return _(name);
+        return new JsPair(name, new DateTime(value).toString(format));
+    }
+    public static JsPair $(String name, DateTime value, String format) {
+        if (value == null) return _(name);
+        return new JsPair(name, value.toString(format));
+    }
+    public static JsPair $(String name, DateTime value, org.joda.time.format.DateTimeFormatter format) {
+        if (value == null) return _(name);
+        return new JsPair(name, value.toString(format));
     }
 
     public static JsPair $(String name, Long value) {
