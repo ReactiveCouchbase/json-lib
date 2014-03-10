@@ -3,27 +3,14 @@ package org.reactivecouchbase.json.test;
 import com.google.common.base.Function;
 import org.junit.Assert;
 import org.junit.Test;
-import org.reactivecouchbase.json.JsArray;
-import org.reactivecouchbase.json.JsBoolean;
-import org.reactivecouchbase.json.JsNull;
-import org.reactivecouchbase.json.JsNumber;
-import org.reactivecouchbase.json.JsObject;
-import org.reactivecouchbase.json.JsResult;
-import org.reactivecouchbase.json.JsString;
-import org.reactivecouchbase.json.JsSuccess;
-import org.reactivecouchbase.json.JsUndefined;
-import org.reactivecouchbase.json.JsValue;
-import org.reactivecouchbase.json.Json;
-import org.reactivecouchbase.json.Reader;
-import org.reactivecouchbase.json.Writer;
-
-import java.util.List;
+import org.reactivecouchbase.json.*;
 
 import static org.reactivecouchbase.common.Functionnal.T3;
 import static org.reactivecouchbase.common.Functionnal.T4;
 import static org.reactivecouchbase.json.JsResult.combine;
-import static org.reactivecouchbase.json.Syntax.*;
 import static org.reactivecouchbase.json.ReaderConstraints.*;
+import static org.reactivecouchbase.json.Syntax.*;
+import static org.reactivecouchbase.json.ComposableValidator.*;
 
 public class JsonTest {
 
@@ -276,6 +263,73 @@ public class JsonTest {
         JsObject value = Json.toJson(new User("John", "Doe", 42), userWriter).as(JsObject.class);
 
         Assert.assertEquals(userJsonUpper, value);
+    }
+
+    @Test
+    public void combinatorReadersTest() {
+        JsObject userJson = Json.obj(
+                $( "name", "John" ),
+                $( "surname", "Doe" ),
+                $( "age", 42 )
+        );
+        JsObject userJson2 = Json.obj(
+                $( "name", "John" ),
+                $( "surname", "Doe" ),
+                $( "age", 3 )
+        );
+        JsObject userJson3 = Json.obj(
+                $( "name", "John" ),
+                $( "surname", "Doe" ),
+                $( "age", 103 )
+        );
+        JsObject userJson4 = Json.obj(
+                $( "name", "Jane" ),
+                $( "surname", "Doe" ),
+                $( "age", 103 )
+        );
+
+        Reader<User> userReader = new Reader<User>() {
+            @Override
+            public JsResult<User> read(JsValue value) {
+                JsObject object = value.as(JsObject.class);
+                return combine(
+                        object.field("name").read(validator(String.class, matches("John"))),
+                        object.field("surname").read(String.class),
+                        object.field("age").read(validator(Integer.class, min(18), max(99)))
+                ).map(new Function<T3<String, String, Integer>, User>() {
+                    public User apply(T3<String, String, Integer> tuple) {
+                        return new User(tuple._1, tuple._2, tuple._3);
+                    }
+                });
+            }
+        };
+        JsResult<User> maybeUser = Json.fromJson(userJson, userReader);
+        Assert.assertFalse(maybeUser.isErrors());
+        Assert.assertTrue(maybeUser.isSuccess());
+        for (User user : maybeUser) {
+            Assert.assertEquals("John", user.name);
+            Assert.assertEquals("Doe", user.surname);
+            Assert.assertEquals(Integer.valueOf(42), user.age);
+        }
+        JsResult<User> maybeUser2 = Json.fromJson(userJson2, userReader);
+        JsResult<User> maybeUser3 = Json.fromJson(userJson3, userReader);
+        JsResult<User> maybeUser4 = Json.fromJson(userJson4, userReader);
+
+        Assert.assertTrue(maybeUser2.isErrors());
+        Assert.assertFalse(maybeUser2.isSuccess());
+        Assert.assertTrue(maybeUser2.hasErrors());
+        Assert.assertEquals(1, maybeUser2.countErrors());
+
+
+        Assert.assertTrue(maybeUser3.isErrors());
+        Assert.assertFalse(maybeUser3.isSuccess());
+        Assert.assertTrue(maybeUser3.hasErrors());
+        Assert.assertEquals(1, maybeUser3.countErrors());
+
+        Assert.assertTrue(maybeUser4.isErrors());
+        Assert.assertFalse(maybeUser4.isSuccess());
+        Assert.assertTrue(maybeUser4.hasErrors());
+        Assert.assertEquals(2, maybeUser4.countErrors());
     }
 
     @Test
