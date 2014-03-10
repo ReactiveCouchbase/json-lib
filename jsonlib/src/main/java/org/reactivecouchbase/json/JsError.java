@@ -92,7 +92,8 @@ public class JsError<T> extends JsResult<T> {
     }
 
     @Override
-    public JsResult<T> filter(Function<T, Boolean> predicate, JsResult<T> val, List<Throwable> errs) {
+    public JsResult<T> filter(Function<T, Boolean> predicate, List<Throwable> errs) {
+        JsResult<T> val = this;
         List<Throwable> thrs = new ArrayList<Throwable>();
         thrs.addAll(this.errors);
         if (val.isSuccess() && predicate.apply(val.get())) {
@@ -102,11 +103,34 @@ public class JsError<T> extends JsResult<T> {
     }
 
     @Override
-    public JsResult<T> filterNot(Function<T, Boolean> predicate, JsResult<T> val, List<Throwable> errs) {
+    public JsResult<T> filterNot(Function<T, Boolean> predicate, List<Throwable> errs) {
+        JsResult<T> val = this;
         List<Throwable> thrs = new ArrayList<Throwable>();
         thrs.addAll(this.errors);
         if (val.isSuccess() && !predicate.apply(val.get())) {
             thrs.addAll(errs);
+        }
+        return new JsError<T>(thrs);
+    }
+
+    @Override
+    public JsResult<T> filter(Function<T, Boolean> predicate, Throwable error) {
+        JsResult<T> val = this;
+        List<Throwable> thrs = new ArrayList<Throwable>();
+        thrs.addAll(this.errors);
+        if (val.isSuccess() && predicate.apply(val.get())) {
+            thrs.add(error);
+        }
+        return new JsError<T>(thrs);
+    }
+
+    @Override
+    public JsResult<T> filterNot(Function<T, Boolean> predicate, Throwable error) {
+        JsResult<T> val = this;
+        List<Throwable> thrs = new ArrayList<Throwable>();
+        thrs.addAll(this.errors);
+        if (val.isSuccess() && !predicate.apply(val.get())) {
+            thrs.add(error);
         }
         return new JsError<T>(thrs);
     }

@@ -33,7 +33,7 @@ public class ReaderConstraints {
                     public Boolean apply(Integer val) {
                         return val > max;
                     }
-                }, jsr, Lists.<Throwable>newArrayList(new IllegalStateException("Value is to big.")));
+                }, new ValidationError("Value is to big."));
             }
         };
     }
@@ -48,7 +48,7 @@ public class ReaderConstraints {
                     public Boolean apply(Integer val) {
                         return val < min;
                     }
-                }, jsr, Lists.<Throwable>newArrayList(new IllegalStateException("Value is to small.")));
+                }, new ValidationError("Value is to small."));
             }
         };
     }
@@ -63,7 +63,7 @@ public class ReaderConstraints {
                     public Boolean apply(String val) {
                         return val.matches(pattern);
                     }
-                }, jsr, Lists.<Throwable>newArrayList(new IllegalStateException("Value does not match.")));
+                }, new ValidationError("Value does not match."));
             }
         };
     }
@@ -78,7 +78,7 @@ public class ReaderConstraints {
                     public Boolean apply(A val) {
                         return p.apply(val);
                     }
-                }, jsr, Lists.<Throwable>newArrayList(new IllegalStateException("Value does not verify.")));
+                }, new ValidationError("Value does not verify."));
             }
         };
     }
@@ -125,6 +125,14 @@ public class ReaderConstraints {
             for (Exception e : exceptions) {
                 e.printStackTrace();
             }
+        }
+
+        public JsValue asJson() {
+            return DefaultWriters.throwableAsJson(this);
+        }
+
+        public JsValue asJson(boolean stack) {
+            return DefaultWriters.throwableAsJson(this, stack);
         }
     }
 }

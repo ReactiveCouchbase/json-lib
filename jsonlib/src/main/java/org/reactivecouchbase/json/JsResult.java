@@ -26,9 +26,13 @@ public abstract class JsResult<T> implements Iterable<T> {
 
     public abstract JsResult<T> filterNot(Function<T, Boolean> predicate);
 
-    public abstract JsResult<T> filter(Function<T, Boolean> predicate, JsResult<T> val, List<Throwable> errors);
+    public abstract JsResult<T> filter(Function<T, Boolean> predicate, List<Throwable> errors);
 
-    public abstract JsResult<T> filterNot(Function<T, Boolean> predicate, JsResult<T> val, List<Throwable> errors);
+    public abstract JsResult<T> filterNot(Function<T, Boolean> predicate, List<Throwable> errors);
+
+    public abstract JsResult<T> filter(Function<T, Boolean> predicate, Throwable error);
+
+    public abstract JsResult<T> filterNot(Function<T, Boolean> predicate, Throwable error);
 
     public abstract boolean hasErrors();
 

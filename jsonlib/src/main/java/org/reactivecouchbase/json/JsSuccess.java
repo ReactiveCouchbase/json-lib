@@ -108,7 +108,7 @@ public class JsSuccess<T> extends JsResult<T> {
     }
 
     @Override
-    public JsResult<T> filter(final Function<T, Boolean> predicate, final JsResult<T> val, final List<Throwable> errors) {
+    public JsResult<T> filter(final Function<T, Boolean> predicate, final List<Throwable> errors) {
         return this.flatMap(new Function<T, JsResult<T>>() {
             public JsResult<T> apply(T a) {
                 if (predicate.apply(a)) {
@@ -122,12 +122,40 @@ public class JsSuccess<T> extends JsResult<T> {
     }
 
     @Override
-    public JsResult<T> filterNot(final Function<T, Boolean> predicate, final JsResult<T> val, final List<Throwable> errors) {
+    public JsResult<T> filterNot(final Function<T, Boolean> predicate, final List<Throwable> errors) {
         return this.flatMap(new Function<T, JsResult<T>>() {
             public JsResult<T> apply(T a) {
                 if (predicate.apply(a)) {
                     List<Throwable> ts = new ArrayList<Throwable>();
                     ts.addAll(errors);
+                    return new JsError<T>(ts);
+                }
+                return new JsSuccess<T>(a);
+            }
+        });
+    }
+
+    @Override
+    public JsResult<T> filter(final Function<T, Boolean> predicate, final Throwable error) {
+        return this.flatMap(new Function<T, JsResult<T>>() {
+            public JsResult<T> apply(T a) {
+                if (predicate.apply(a)) {
+                    return new JsSuccess<T>(a);
+                }
+                List<Throwable> ts = new ArrayList<Throwable>();
+                ts.add(error);
+                return new JsError<T>(ts);
+            }
+        });
+    }
+
+    @Override
+    public JsResult<T> filterNot(final Function<T, Boolean> predicate, final Throwable error) {
+        return this.flatMap(new Function<T, JsResult<T>>() {
+            public JsResult<T> apply(T a) {
+                if (predicate.apply(a)) {
+                    List<Throwable> ts = new ArrayList<Throwable>();
+                    ts.add(error);
                     return new JsError<T>(ts);
                 }
                 return new JsSuccess<T>(a);
