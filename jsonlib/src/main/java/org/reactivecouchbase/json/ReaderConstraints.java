@@ -87,6 +87,22 @@ public class ReaderConstraints {
         };
     }
 
+    @Deprecated
+    public static <A> Reader<A> verifying(final Predicate<A> p, final Reader<A> reads) {
+        return new Reader<A>() {
+            @Override
+            public JsResult<A> read(JsValue value) {
+                JsResult<A> jsr = reads.read(value);
+                return jsr.filter(new Function<A, Boolean>() {
+                    @Override
+                    public Boolean apply(A val) {
+                        return p.apply(val);
+                    }
+                }, new ValidationError("Value does not verify."));
+            }
+        };
+    }
+
     public static Reader<String> matches(final String pattern) {
         return new Reader<String>() {
             @Override
@@ -161,22 +177,6 @@ public class ReaderConstraints {
                 } catch (Exception e) {
                     return new JsError<A>(new ValidationError(e.getMessage()));
                 }
-            }
-        };
-    }
-
-    @Deprecated
-    public static <A> Reader<A> verifying(final Predicate<A> p, final Reader<A> reads) {
-        return new Reader<A>() {
-            @Override
-            public JsResult<A> read(JsValue value) {
-                JsResult<A> jsr = reads.read(value);
-                return jsr.filter(new Function<A, Boolean>() {
-                    @Override
-                    public Boolean apply(A val) {
-                        return p.apply(val);
-                    }
-                }, new ValidationError("Value does not verify."));
             }
         };
     }
