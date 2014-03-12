@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import org.junit.Assert;
 import org.junit.Test;
 import org.reactivecouchbase.json.*;
+import org.reactivecouchbase.common.Functionnal;
 
 import static org.reactivecouchbase.common.Functionnal.T3;
 import static org.reactivecouchbase.common.Functionnal.T4;
@@ -144,6 +145,8 @@ public class JsonTest {
         userJson2 = userJson2.add( $("age", 42) );
 
         JsObject userJson3 = Json.parse("{\"name\":\"John\", \"surname\":\"Doe\", \"age\":42}").as(JsObject.class);
+
+        System.out.println(userJson3);
 
         User user = new User("John", "Doe", 42);
         Assert.assertNotSame(userJson, user);
@@ -526,4 +529,109 @@ public class JsonTest {
         Assert.assertNotEquals(expected, wrongobj1);
         Assert.assertNotEquals(expected, wrongobj2);
     }
+
+    @Test
+    public void fmtTest() {
+        JsValue personJsValue = Json.obj(
+          $("age", 42),
+          $("name", "John"),
+          $("surname", "Doe"),
+          $("address", Json.obj(
+            $("number", "221b"),
+            $("street", "Baker Street"),
+            $("city", "London")
+          ))
+        );
+
+        JsValue badPersonJsValue = Json.obj(
+          $("name", "John"),
+          $("surname", "Doe"),
+          $("age", 42),
+          $("adresse", Json.obj(
+            $("number", "221b"),
+            $("street", "Baker Street"),
+            $("city", "London")
+          ))
+        );
+
+        String expectedPerson = Json.stringify(personJsValue);
+        String badPerson = Json.stringify(badPersonJsValue);
+
+        System.out.println(Json.parse(expectedPerson));
+
+        Assert.assertTrue(Json.parse(expectedPerson).validate(Person.FORMAT).isSuccess());
+        Assert.assertTrue(Json.parse(badPerson).validate(Person.FORMAT).isErrors());
+    }
+
+    public static class Address {
+        public final String number;
+        public final String street;
+        public final String city;
+        public Address(String number, String street, String city) {
+          this.number = number;
+          this.street = street;
+          this.city = city;
+        }
+        public static final Format<Address> FORMAT =  new Format<Address>() {
+          @Override
+          public JsResult<Address> read(JsValue value) {
+            return combine(
+              value.field("number").read(String.class),
+              value.field("street").read(String.class),
+              value.field("city").read(String.class)
+            ).map(new Function<Functionnal.T3<String, String, String>, Address>() {
+              @Override
+              public Address apply(Functionnal.T3<String, String, String> input) {
+                return new Address(input._1, input._2, input._3);
+              }
+            });
+          }
+          @Override
+          public JsValue write(Address value) {
+            return Json.obj(
+              $("number", value.number),
+              $("street", value.street),
+              $("city", value.city)
+            );
+          }
+        };
+      }
+
+  public static class Person {
+    public final String name;
+    public final String surname;
+    public final Integer age;
+    public final Address address;
+    public Person(String name, String surname, Integer age, Address address) {
+      this.name = name;
+      this.surname = surname;
+      this.age = age;
+      this.address = address;
+    }
+    public static final Format<Person> FORMAT = new Format<Person>() {
+      @Override
+      public JsResult<Person> read(JsValue value) {
+        return combine(
+          value.field("name").read(String.class),
+          value.field("surname").read(String.class),
+          value.field("age").read(Integer.class),
+          value.field("address").read(Address.FORMAT)
+        ).map(new Function<Functionnal.T4<String, String, Integer, Address>, Person>() {
+            @Override
+            public Person apply(Functionnal.T4<String, String, Integer, Address> input) {
+                return new Person(input._1, input._2, input._3, input._4);
+            }
+        });
+      }
+      @Override
+      public JsValue write(Person value) {
+        return Json.obj(
+          $("name", value.name),
+          $("surname", value.surname),
+          $("age", value.age),
+          $("address", Address.FORMAT.write(value.address))
+        );
+      }
+    };
+  }
 }

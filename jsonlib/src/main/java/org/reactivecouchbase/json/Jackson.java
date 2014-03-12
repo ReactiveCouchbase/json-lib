@@ -236,6 +236,10 @@ class Jackson {
             if (token.equals(JsonToken.VALUE_NULL)) {
                 value = Syntax.JSNULL_INSTANCE;
             }
+            if (token.equals(JsonToken.VALUE_EMBEDDED_OBJECT)) {
+                jp.nextToken();
+                value = readObject(jp, ctx);
+            }
             if (token.equals(JsonToken.START_OBJECT)) {
                 jp.nextToken();
                 value = readObject(jp, ctx);
@@ -265,7 +269,7 @@ class Jackson {
                     jp.nextToken();
                 }
             }
-            jp.nextToken();
+            //jp.nextToken();
             return object;
         }
 
