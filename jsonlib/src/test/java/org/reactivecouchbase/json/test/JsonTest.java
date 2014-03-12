@@ -293,9 +293,9 @@ public class JsonTest {
             public JsResult<User> read(JsValue value) {
                 JsObject object = value.as(JsObject.class);
                 return combine(
-                        object.field("name").read(validator(String.class, matches("John"))),
+                        object.field("name").read(validateWith(String.class, matches("John"))),
                         object.field("surname").read(String.class),
-                        object.field("age").read(validator(Integer.class, min(18), max(99)))
+                        object.field("age").read(validateWith(Integer.class, min(18), max(99)))
                 ).map(new Function<T3<String, String, Integer>, User>() {
                     public User apply(T3<String, String, Integer> tuple) {
                         return new User(tuple._1, tuple._2, tuple._3);

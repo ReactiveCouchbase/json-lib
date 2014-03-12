@@ -11,7 +11,7 @@ public class ComposableValidator<T> implements Reader<T> {
     private final List<Reader<T>> validators;
     private final boolean traverse;
 
-    public static <T> ComposableValidator<T> validator(final Class<T> clazz, Reader<T>... reads) {
+    public static <T> ComposableValidator<T> validateWith(final Class<T> clazz, Reader<T>... reads) {
         return new ComposableValidator<T>(DefaultReaders.getReader(clazz).getOrElse(new Callable<Reader<T>>() {
             @Override
             public Reader<T> call() throws Exception {
@@ -20,7 +20,7 @@ public class ComposableValidator<T> implements Reader<T> {
         }), Arrays.asList(reads), true);
     }
 
-    private static <T> ComposableValidator<T> validator(Reader<T> base, Reader<T>... reads) {
+    private static <T> ComposableValidator<T> validateWith(Reader<T> base, Reader<T>... reads) {
         return new ComposableValidator<T>(base, Arrays.asList(reads), true);
     }
 

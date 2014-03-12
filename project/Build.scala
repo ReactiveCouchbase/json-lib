@@ -5,9 +5,6 @@ object ApplicationBuild extends Build {
 
   val appName         = "json-lib"
   val appVersion      = "0.2-SNAPSHOT"
-  val appScalaVersion = "2.10.2"
-  val appScalaBinaryVersion = "2.10"
-  val appScalaCrossVersions = Seq("2.10.2")
 
   val local: Project.Initialize[Option[sbt.Resolver]] = version { (version: String) =>
     val localPublishRepo = "./repository"
@@ -17,10 +14,8 @@ object ApplicationBuild extends Build {
   }
 
   lazy val baseSettings = Defaults.defaultSettings ++ Seq(
-    scalaVersion := appScalaVersion,
-    scalaBinaryVersion := appScalaBinaryVersion,
-    crossScalaVersions := appScalaCrossVersions,
-    parallelExecution in Test := false
+    autoScalaLibrary := false,
+    crossPaths := false
   )
 
   lazy val root = Project("root", base = file("."))
