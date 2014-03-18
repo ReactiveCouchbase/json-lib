@@ -143,9 +143,7 @@ Reader<User> userReader = new Reader<User>() {
              value.field("surname").read(String.class),
              value.field("age").read( validateWith( Integer.class, max( 99 ), min( 18 ))),
              value.field("email").read( validateWith( String.class, matches( "^[_a-z0-9-]+(\\.[_a-z0-9-]+)*@[a-z0-9-]+(\\.[a-z0-9-]+)+$" ))
-         ).map(tuple -> {
-             return new User(tuple._1, tuple._2, tuple._3, tuple._4);
-         });
+         ).map(tuple -> new User(tuple._1, tuple._2, tuple._3, tuple._4));
      }
 };
 
