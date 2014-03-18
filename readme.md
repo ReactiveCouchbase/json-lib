@@ -10,13 +10,18 @@ Json AST
 
 Every json structure is represented with a Json AST.
 
-In that AST, everything is a JsValue.
+In that AST, everything is a `JsValue`.
 
 Then each json type inherit from it :
 
-JsNumber, JsString, JsBoolean, JsObject, JsArray, JsUndefined, JsNull
+`JsNumber`, `JsString`, `JsBoolean`, `JsObject`, `JsArray`, `JsUndefined`, `JsNull`
 
-The Json class provides the basic functions to create/manipulate json AST
+The `Json` class provides the basic functions to create/manipulate json AST.
+
+The `JsValue::as` method allows you to cast AST elements to specific `JsValue` subtypes or corresponding Java types.
+
+You can also provide `Reader` and `Writer` to provide custom serialization/deserialization for you json ASTs. You can also
+use it to validate, transform or enhance json ASTs.
 
 Create a Json Object
 --------------------
