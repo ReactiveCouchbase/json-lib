@@ -24,6 +24,22 @@ public class JsArray extends JsValue implements Iterable<JsValue> {
         this.values = new ArrayList<JsValue>();
     }
 
+    public int size() {
+        return values == null ? 0 : values.size();
+    }
+
+    public boolean isEmpty() {
+        return values == null || values.isEmpty();
+    }
+
+    public boolean notEmpty() {
+        return !isEmpty();
+    }
+
+    public boolean contains(JsValue value) {
+        return values.contains(value);
+    }
+
     @Override
     public Iterator<JsValue> iterator() {
         return values.iterator();

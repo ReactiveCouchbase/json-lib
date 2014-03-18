@@ -27,6 +27,22 @@ public class JsObject extends JsValue implements Iterable<Map.Entry<String, JsVa
         this.values = new HashMap<String, JsValue>();
     }
 
+    public int nbrOfElements() {
+        return size();
+    }
+
+    public int size() {
+        return values == null ? 0 : values.size();
+    }
+
+    public boolean isEmpty() {
+        return values == null || values.isEmpty();
+    }
+
+    public boolean notEmpty() {
+        return !isEmpty();
+    }
+
     public JsObject merge(JsObject with) {
         if (with == null) throw new IllegalArgumentException("Value can't be null !");
         Map<String, JsValue> newValues = new HashMap<String, JsValue>();
