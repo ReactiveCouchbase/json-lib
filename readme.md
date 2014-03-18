@@ -5,6 +5,19 @@ Highly inspired and copied from @mandubian (Pascal Voitot) Json lib for Play 2 S
 
 Will be the standard Json library for the ReactiveCouchbase Java wrapper
 
+Json AST
+--------------------
+
+Every json structure is represented with a Json AST.
+
+In that AST, everything is a JsValue.
+
+Then each json type inherit from it :
+
+JsNumber, JsString, JsBoolean, JsObject, JsArray, JsUndefined, JsNull
+
+The Json class provides the basic functions to create/manipulate json AST
+
 Create a Json Object
 --------------------
 
@@ -103,8 +116,8 @@ Reader<User> userReader = new Reader<User>() {
              return new JsSuccess<User>(new User(
                  value.field("name").as(String.class),
                  value.field("surname").as(String.class),
-                 value.field("age").as(Integer.class, max( 99, min( 18, Json.reads(Integer.class) ))),
-                 value.field("email").as(String.class, matches( "^[_a-z0-9-]+(\\.[_a-z0-9-]+)*@[a-z0-9-]+(\\.[a-z0-9-]+)+$" , Json.reads(String.class) ))
+                 value.field("age").as(Integer.class, validateWith(Integer.class, max( 99 ), min( 18 ))),
+                 value.field("email").as(String.class, validateWith(String.class, matches( "^[_a-z0-9-]+(\\.[_a-z0-9-]+)*@[a-z0-9-]+(\\.[a-z0-9-]+)+$"))
              ));
          } catch (Exception e) {
              return new JsError<T>(new IllegalStateException("Ooops"));
@@ -123,8 +136,8 @@ Reader<User> userReader = new Reader<User>() {
          return combine(
              value.field("name").read(String.class),
              value.field("surname").read(String.class),
-             value.field("age").read(Integer.class, max( 99, min( 18, Json.reads(Integer.class) ))),
-             value.field("email").read(String.class, matches( "^[_a-z0-9-]+(\\.[_a-z0-9-]+)*@[a-z0-9-]+(\\.[a-z0-9-]+)+$" , Json.reads(String.class) ))
+             value.field("age").read( validateWith( Integer.class, max( 99 ), min( 18 ))),
+             value.field("email").read( validateWith( String.class, matches( "^[_a-z0-9-]+(\\.[_a-z0-9-]+)*@[a-z0-9-]+(\\.[a-z0-9-]+)+$" ))
          ).map(tuple -> {
              return new User(tuple._1, tuple._2, tuple._3, tuple._4);
          });
@@ -152,7 +165,8 @@ Writer<User> userWriter = new Writer<User>() {
             $("name", user.name),
             $("surname", user.surname),
             $("age", user.age),
-            $("email", user.email)
+            $("email", user.email),
+            $("gravatar", String.format("http://www.gravatar.com/avatar/%s?s=50&d=wavatar", Codec.md5(user.email))
         );
     }
 };
