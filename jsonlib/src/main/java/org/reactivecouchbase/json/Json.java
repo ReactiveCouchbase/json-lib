@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class Json {
 
@@ -27,11 +28,11 @@ public class Json {
         };
     }
 
-    public static <T> Reader<T> reads(final Class<T> clazz) {
+    public static <T> CReader<T> reads(final Class<T> clazz) {
         if (DefaultReaders.readers.containsKey(clazz)) {
-            return (Reader<T>) DefaultReaders.readers.get(clazz);
+            return (CReader<T>) DefaultReaders.readers.get(clazz);
         }
-        return new Reader<T>() {
+        return new CReader<T>() {
             @Override
             public JsResult<T> read(JsValue value) {
                 try {
@@ -43,8 +44,8 @@ public class Json {
         };
     }
 
-    public static <T> Writer<T> writes(final Class<T> clazz) {
-        return new Writer<T>() {
+    public static <T> CWriter<T> writes(final Class<T> clazz) {
+        return new CWriter<T>() {
             @Override
             public JsValue write(T value) {
                 return Jackson.jsonNodeToJsValue(Jackson.toJson(value));
@@ -70,6 +71,14 @@ public class Json {
 
     public static JsObject obj(JsObject... objects) {
         return obj(Arrays.asList(objects));
+    }
+
+    public static JsObject obj(Map<String, ?> objects) {
+        JsObject obj = Json.obj();
+        for (Map.Entry<String, ?> entry : objects.entrySet()) {
+            obj = obj.add(Syntax.$(entry.getKey(), wrap(entry.getValue())));
+        }
+        return obj;
     }
 
     public static JsArray array(Iterable<? extends Object> objects) {
