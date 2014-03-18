@@ -63,6 +63,14 @@ public class Syntax {
         return new JsPair(name, value);
     }
 
+    public static JsPair $(String name, Short value) {
+        return new JsPair(name, value);
+    }
+
+    public static JsPair $(String name, Float value) {
+        return new JsPair(name, value);
+    }
+
     public static JsPair $(String name, Integer value) {
         return new JsPair(name, value);
     }

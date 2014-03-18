@@ -32,6 +32,16 @@ public class JsNumber extends JsValue implements java.lang.Comparable<JsNumber> 
         this.value = BigDecimal.valueOf(value);
     }
 
+    public JsNumber(Float value) {
+        if (value == null) throw new IllegalArgumentException("Value can't be null !");
+        this.value = BigDecimal.valueOf(value);
+    }
+
+    public JsNumber(Short value) {
+        if (value == null) throw new IllegalArgumentException("Value can't be null !");
+        this.value = BigDecimal.valueOf(value).setScale(0);
+    }
+
     @Override
     public int compareTo(JsNumber jsNumber) {
         return value.compareTo(jsNumber.value);

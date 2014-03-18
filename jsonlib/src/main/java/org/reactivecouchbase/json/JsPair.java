@@ -13,6 +13,14 @@ public class JsPair extends JsObject {
         super(Syntax.asMap(name, new JsNumber(value)));
     }
 
+    public JsPair(String name, Short value) {
+        super(Syntax.asMap(name, new JsNumber(value)));
+    }
+
+    public JsPair(String name, Float value) {
+        super(Syntax.asMap(name, new JsNumber(value)));
+    }
+
     public JsPair(String name, Integer value) {
         super(Syntax.asMap(name, new JsNumber(value)));
     }
