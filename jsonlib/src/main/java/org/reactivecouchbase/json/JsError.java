@@ -167,4 +167,9 @@ public class JsError<T> extends JsResult<T> {
             }
         }));
     }
+
+    @Override
+    public String toString() {
+        return "JsError(" + errors + ')';
+    }
 }

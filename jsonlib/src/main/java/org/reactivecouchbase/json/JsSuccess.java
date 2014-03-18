@@ -167,4 +167,9 @@ public class JsSuccess<T> extends JsResult<T> {
     public Iterator<T> iterator() {
         return Collections.singletonList(value).iterator();
     }
+
+    @Override
+    public String toString() {
+        return "JsSuccess(" + value +')';
+    }
 }
