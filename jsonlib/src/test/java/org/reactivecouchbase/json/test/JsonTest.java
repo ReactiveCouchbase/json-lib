@@ -11,7 +11,7 @@ import static org.reactivecouchbase.common.Functionnal.T4;
 import static org.reactivecouchbase.json.JsResult.combine;
 import static org.reactivecouchbase.json.ReaderConstraints.*;
 import static org.reactivecouchbase.json.Syntax.*;
-import static org.reactivecouchbase.json.ComposableValidator.*;
+import static org.reactivecouchbase.json.JsValidator.*;
 
 public class JsonTest {
 
