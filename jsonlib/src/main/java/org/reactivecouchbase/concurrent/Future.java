@@ -32,7 +32,7 @@ public class Future<T> {
         this.fuuuu = new java.util.concurrent.Future<T>() {
             @Override
             public boolean cancel(boolean b) {
-                throw new IllegalAccessError("Can't stop a future !!!");
+                throw new IllegalAccessError("You can't stop the future !!!");
             }
 
             @Override

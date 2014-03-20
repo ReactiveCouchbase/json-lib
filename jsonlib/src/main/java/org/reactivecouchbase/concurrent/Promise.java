@@ -25,6 +25,14 @@ public class Promise<T> {
         this.future = new Future<T>(this, INTERNAL_EXECUTION_CONTEXT);
     }
 
+    public static <T> Promise<T> create() {
+        return new Promise<T>();
+    }
+
+    public static <T> Promise<T> create(ExecutorService ec) {
+        return new Promise<T>(ec);
+    }
+
     public boolean isCompleted() {
         return promiseLock.getCount() <= 0;
     }
