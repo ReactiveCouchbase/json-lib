@@ -65,9 +65,9 @@ public class Functionnal {
 
         Option<T> map(Callable<T> function);
 
-        Option<T> flatMap(Callable<Option<T>> action);
+        <R> Option<R> flatMap(Callable<Option<R>> action);
 
-        Option<T> flatMap(Function<T, Option<T>> action);
+        <R> Option<R> flatMap(Function<T, Option<R>> action);
 
         Option<T> filter(Function<T, Boolean> predicate);
 
@@ -178,7 +178,7 @@ public class Functionnal {
         }
 
         @Override
-        public Option<T> flatMap(Callable<Option<T>> action) {
+        public <R> Option<R> flatMap(Callable<Option<R>> action) {
             if (isDefined()) {
                 try {
                     return action.call();
@@ -190,7 +190,7 @@ public class Functionnal {
         }
 
         @Override
-        public Option<T> flatMap(Function<T, Option<T>> action) {
+        public <R> Option<R> flatMap(Function<T, Option<R>> action) {
             if (isDefined()) {
                 return action.apply(get());
             }
