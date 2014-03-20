@@ -3,6 +3,7 @@ package org.reactivecouchbase.concurrent;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.JdkFutureAdapters;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.reactivecouchbase.common.Duration;
 import org.reactivecouchbase.common.Functionnal;
@@ -82,6 +83,14 @@ public class Future<T> {
 
     public java.util.concurrent.Future<T> toJucFuture() {
         return fuuuu;
+    }
+
+    public ListenableFuture<T> toListenableFuture() {
+        return JdkFutureAdapters.listenInPoolThread(fuuuu);
+    }
+
+    public ListenableFuture<T> toListenableFuture(ExecutorService ec) {
+        return JdkFutureAdapters.listenInPoolThread(fuuuu, ec);
     }
 
     void triggerCallbacks() {
