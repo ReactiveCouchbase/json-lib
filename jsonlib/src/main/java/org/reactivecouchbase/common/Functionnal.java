@@ -1,6 +1,7 @@
 package org.reactivecouchbase.common;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -90,6 +91,8 @@ public class Functionnal {
         public abstract boolean isEmpty();
 
         public abstract T get();
+
+        public abstract Optional<T> toOptional();
 
         public Option<T> orElse(T value) {
             return isEmpty() ? Option.maybe(value) : this;
@@ -222,6 +225,11 @@ public class Functionnal {
     public static class None<T> extends Option<T> {
 
         @Override
+        public Optional<T> toOptional() {
+            return Optional.absent();
+        }
+
+        @Override
         public boolean isDefined() {
             return false;
         }
@@ -253,6 +261,11 @@ public class Functionnal {
 
         public Some(T value) {
             this.value = value;
+        }
+
+        @Override
+        public Optional<T> toOptional() {
+            return Optional.of(value);
         }
 
         @Override
