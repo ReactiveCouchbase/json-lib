@@ -98,6 +98,11 @@ public class Future<T> {
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /* Resulting Future will use the  Executor from the current Future */
+    public Future<T> andThen(final Functionnal.Action<Functionnal.Try<T>> callback) { return andThen(callback, ec); }
+
     public Future<T> andThen(final Functionnal.Action<Functionnal.Try<T>> callback, ExecutorService ec) {
         final Promise<T> promise = new Promise<T>();
         this.onComplete(new Functionnal.Action<Functionnal.Try<T>>() {
@@ -109,6 +114,9 @@ public class Future<T> {
         }, ec);
         return promise.future();
     }
+
+    /* Resulting Future will use the  Executor from the current Future */
+    public void onComplete(final Functionnal.Action<Functionnal.Try<T>> callback) { onComplete(callback, ec); }
 
     public void onComplete(final Functionnal.Action<Functionnal.Try<T>> callback, ExecutorService ec) {
         synchronized (this) {
@@ -126,6 +134,9 @@ public class Future<T> {
         }
     }
 
+    /* Resulting Future will use the  Executor from the current Future */
+    public void onSuccess(final Functionnal.Action<T> callback) { onSuccess(callback, ec); }
+
     public void onSuccess(final Functionnal.Action<T> callback, ExecutorService ec) {
         onComplete(new Functionnal.Action<Functionnal.Try<T>>() {
             @Override
@@ -137,6 +148,9 @@ public class Future<T> {
         }, ec);
     }
 
+    /* Resulting Future will use the  Executor from the current Future */
+    public void onError(final Functionnal.Action<Throwable> callback) { onError(callback, ec); }
+
     public void onError(final Functionnal.Action<Throwable> callback, ExecutorService ec) {
         onComplete(new Functionnal.Action<Functionnal.Try<T>>() {
             @Override
@@ -147,6 +161,9 @@ public class Future<T> {
             }
         }, ec);
     }
+
+    /* Resulting Future will use the  Executor from the current Future */
+    public <B> Future<B> map(final Function<T, B> map) { return map(map, ec); }
 
     public <B> Future<B> map(final Function<T, B> map, ExecutorService ec) {
         final Promise<B> promise = new Promise<B>();
@@ -167,6 +184,9 @@ public class Future<T> {
         }, ec);
         return promise.future();
     }
+
+    /* Resulting Future will use the  Executor from the current Future */
+    public Future<T> filter(final Function<T, Boolean> predicate) { return filter(predicate, ec); }
 
     public Future<T> filter(final Function<T, Boolean> predicate, ExecutorService ec) {
         final Promise<T> promise = new Promise<T>();
@@ -190,6 +210,9 @@ public class Future<T> {
         return promise.future();
     }
 
+    /* Resulting Future will use the  Executor from the current Future */
+    public Future<T> filterNot(final Function<T, Boolean> predicate) { return filterNot(predicate, ec); }
+
     public Future<T> filterNot(final Function<T, Boolean> predicate, ExecutorService ec) {
         final Promise<T> promise = new Promise<T>();
         this.onComplete(new Functionnal.Action<Functionnal.Try<T>>() {
@@ -211,6 +234,9 @@ public class Future<T> {
         }, ec);
         return promise.future();
     }
+
+    /* Resulting Future will use the  Executor from the current Future */
+    public <B> Future<B> flatMap(final Function<T, Future<B>> map) { return flatMap(map, ec); }
 
     public <B> Future<B> flatMap(final Function<T, Future<B>> map, final ExecutorService ec) {
         final Promise<B> promise = new Promise<B>();
@@ -243,6 +269,9 @@ public class Future<T> {
         return promise.future();
     }
 
+    /* Resulting Future will use the  Executor from the current Future */
+    public <S> Future<S> mapTo(final Class<S> clazz) { return mapTo(clazz, ec); }
+
     public <S> Future<S> mapTo(final Class<S> clazz, ExecutorService ec) {
         return map(new Function<T, S>() {
             @Override
@@ -252,6 +281,9 @@ public class Future<T> {
         }, ec);
     }
 
+    /* Resulting Future will use the  Executor from the current Future */
+    public void foreach(final Function<T, ?> block) { foreach(block, ec); }
+
     public void foreach(final Function<T, ?> block, ExecutorService ec) {
         this.map(new Function<T, Object>() {
             @Override
@@ -260,6 +292,9 @@ public class Future<T> {
             }
         }, ec);
     }
+
+    /* Resulting Future will use the  Executor from the current Future */
+    public <S> Future<S> transform(final Function<T, S> block, final Function<Throwable, Throwable> errorBlock) { return transform(block, errorBlock, ec); }
 
     public <S> Future<S> transform(final Function<T, S> block, final Function<Throwable, Throwable> errorBlock, ExecutorService ec) {
         final Promise<S> promise = new Promise<S>();
@@ -287,6 +322,9 @@ public class Future<T> {
         return promise.future();
     }
 
+    /* Resulting Future will use the  Executor from the current Future */
+    public <U> Future<U> recover(final Function<Throwable, U> block) { return recover(block, ec); }
+
     public <U> Future<U> recover(final Function<Throwable, U> block, ExecutorService ec) {
         final Promise<U> promise = new Promise<U>();
         this.onComplete(new Functionnal.Action<Functionnal.Try<T>>() {
@@ -297,6 +335,9 @@ public class Future<T> {
         }, ec);
         return promise.future();
     }
+
+    /* Resulting Future will use the  Executor from the current Future */
+    public Future<T> recoverWith(final Function<Throwable, Future<T>> block) { return recoverWith(block, ec); }
 
     public Future<T> recoverWith(final Function<Throwable, Future<T>> block, final ExecutorService ec) {
         final Promise<T> promise = new Promise<T>();
@@ -323,6 +364,9 @@ public class Future<T> {
         return promise.future();
     }
 
+    /* Resulting Future will use the  Executor from the current Future */
+    public Future<T> fallbackTo(final Future<T> that) { return fallbackTo(that, ec); }
+
     public Future<T> fallbackTo(final Future<T> that, final ExecutorService ec) {
         final Promise<T> p = new Promise<T>();
         this.onComplete(new Functionnal.Action<Functionnal.Try<T>>() {
@@ -348,6 +392,10 @@ public class Future<T> {
         }, ec);
         return p.future();
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //   Static API
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static <T> Future<T> firstCompletedOf(final List<Future<T>> futures, final ExecutorService ec) {
         final Promise<T> result = new Promise<T>();
