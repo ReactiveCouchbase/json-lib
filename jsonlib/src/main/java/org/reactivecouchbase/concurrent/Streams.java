@@ -5,6 +5,7 @@ import org.reactivecouchbase.common.Functionnal;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -20,38 +21,64 @@ public class Streams {
         public void error(Throwable t, Consumer<E> to) {
             promise.tryFailure(t);
         }
-        // mix
-        public final Producer<E> filterNot(final Function<E, Boolean> transformer, ExecutorService ec) {
-            return transform(new Function<E, Functionnal.Option<E>>() {
+        public final Producer<E> mergeWith(Producer<E> otherProducer, ExecutorService ec) {
+            final CountDownLatch latch = new CountDownLatch(2);
+            final PushProducer<E> finalProducer = new PushProducer<E>(ec);
+            consumeWith(new Consumer<E>() {
                 @Override
-                public Functionnal.Option<E> apply(E input) {
-                    if (!transformer.apply(input)) {
-                        return Functionnal.Option.some(input);
-                    } else {
-                        return Functionnal.Option.none();
-                    }
+                public void element(E e, Producer<E> from) {
+                    from.nextElement(this);
+                    finalProducer.push(e);
                 }
-            }, ec);
+
+                @Override
+                public void end(Producer<E> from) {
+                    latch.countDown();
+                    if (latch.getCount() == 0) finalProducer.stop();
+                    super.end(from);
+                }
+
+                @Override
+                public void empty(Producer<E> from) {
+                    latch.countDown();
+                    if (latch.getCount() == 0) finalProducer.stop();
+                    super.empty(from);
+                }
+            });
+            otherProducer.consumeWith(new Consumer<E>() {
+                @Override
+                public void element(E e, Producer<E> from) {
+                    from.nextElement(this);
+                    finalProducer.push(e);
+                }
+
+                @Override
+                public void end(Producer<E> from) {
+                    latch.countDown();
+                    if (latch.getCount() == 0) finalProducer.stop();
+                    super.end(from);
+                }
+
+                @Override
+                public void empty(Producer<E> from) {
+                    latch.countDown();
+                    if (latch.getCount() == 0) finalProducer.stop();
+                    super.empty(from);
+                }
+            });
+            return finalProducer;
+        }
+        public final Producer<E> filterNot(final Function<E, Boolean> transformer, ExecutorService ec) {
+            return transform(Transformer.filterNot(transformer), ec);
         }
         public final Producer<E> filter(final Function<E, Boolean> transformer, ExecutorService ec) {
-            return transform(new Function<E, Functionnal.Option<E>>() {
-                @Override
-                public Functionnal.Option<E> apply(E input) {
-                    if (transformer.apply(input)) {
-                        return Functionnal.Option.some(input);
-                    } else {
-                        return Functionnal.Option.none();
-                    }
-                }
-            }, ec);
+            return transform(Transformer.filter(transformer), ec);
         }
         public final <B> Producer<B> map(final Function<E, B> transformer, ExecutorService ec) {
-            return transform(new Function<E, Functionnal.Option<B>>() {
-                @Override
-                public Functionnal.Option<B> apply(E input) {
-                    return Functionnal.Option.some(transformer.apply(input));
-                }
-            }, ec);
+            return transform(Transformer.map(transformer), ec);
+        }
+        public final <B> Producer<B> collect(Function<E, Functionnal.Option<B>> transformer, ExecutorService ec) {
+            return transform(transformer, ec);
         }
         public final <B> Producer<B> transform(Function<E, Functionnal.Option<B>> transformer, ExecutorService ec) {
             return new Transformer<E, B>(this, transformer, ec);
@@ -72,7 +99,7 @@ public class Streams {
         private final Promise<Functionnal.Unit> promise = Promise.create();
         public abstract void element(E e, Producer<E> from);
         public void empty(Producer<E> from) {
-            promise.trySuccess(Functionnal.Unit.unit());
+            from.nextElement(this);
         }
         public void end(Producer<E> from) {
             promise.trySuccess(Functionnal.Unit.unit());
@@ -113,15 +140,12 @@ public class Streams {
             fromProducer.nextElement(new Consumer<FROM>() {
                 @Override
                 public void element(final FROM element, Producer<FROM> from) {
-                    Future.async(new Runnable() {
-                        @Override
-                        public void run() {
-                            Functionnal.Option<TO> optEl = transformer.apply(element);
-                            if (optEl != null && optEl.isDefined()) {
-                                consumer.element(optEl.get(), that);
-                            }
-                        }
-                    }, ec);
+                    Functionnal.Option<TO> optEl = transformer.apply(element);
+                    if (optEl != null && optEl.isDefined()) {
+                        consumer.element(optEl.get(), that);
+                    } else {
+                        consumer.empty(that);
+                    }
                 }
 
                 @Override
@@ -136,6 +160,41 @@ public class Streams {
                     super.end(from);
                 }
             });
+        }
+        public static <FROM> Functionnal.ComposableFunction<FROM, Functionnal.Option<FROM>> filterNot(final Function<FROM, Boolean> transformer) {
+            return Functionnal.chain(new Function<FROM, Functionnal.Option<FROM>>() {
+                @Override
+                public Functionnal.Option<FROM> apply(FROM input) {
+                    if (!transformer.apply(input)) {
+                        return Functionnal.Option.some(input);
+                    } else {
+                        return Functionnal.Option.none();
+                    }
+                }
+            });
+        }
+        public static <FROM> Functionnal.ComposableFunction<FROM, Functionnal.Option<FROM>> filter(final Function<FROM, Boolean> transformer) {
+            return Functionnal.chain(new Function<FROM, Functionnal.Option<FROM>>() {
+                @Override
+                public Functionnal.Option<FROM> apply(FROM input) {
+                    if (transformer.apply(input)) {
+                        return Functionnal.Option.some(input);
+                    } else {
+                        return Functionnal.Option.none();
+                    }
+                }
+            });
+        }
+        public static <FROM, TO> Functionnal.ComposableFunction<FROM, Functionnal.Option<TO>> map(final Function<FROM, TO> transformer) {
+            return Functionnal.chain(new Function<FROM, Functionnal.Option<TO>>() {
+                @Override
+                public Functionnal.Option<TO> apply(FROM input) {
+                    return Functionnal.Option.some(transformer.apply(input));
+                }
+            });
+        }
+        public static <FROM, TO> Functionnal.ComposableFunction<FROM, Functionnal.Option<TO>> collect(final Function<FROM, Functionnal.Option<TO>> transformer) {
+            return Functionnal.chain(transformer);
         }
     }
 
@@ -217,7 +276,7 @@ public class Streams {
                         }
                     }, ec);
                 } else {
-                    to.empty(that);
+                    to.end(that);
                 }
             } catch (Exception e) {
                 to.end(that);

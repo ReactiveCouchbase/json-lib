@@ -2,7 +2,6 @@ package org.reactivecouchbase.json.test;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.sun.istack.internal.Nullable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.reactivecouchbase.common.Functionnal;
@@ -11,10 +10,14 @@ import org.reactivecouchbase.concurrent.Future;
 import org.reactivecouchbase.concurrent.Promise;
 import org.reactivecouchbase.concurrent.Streams;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.reactivecouchbase.concurrent.Streams.Producer;
 
 public class StreamsTest {
 
@@ -41,7 +44,8 @@ public class StreamsTest {
         }.consumeWith(Streams.Consumer.foreach(new Function<Integer, Functionnal.Unit>() {
             @Override
             public Functionnal.Unit apply(Integer input) {
-                System.out.println("Consumed : " + input + " => " + test.addAndGet(input));
+                //System.out.println("Consumed : " + input + " => " + test.get());
+                test.addAndGet(input);
                 return Functionnal.Unit.unit();
             }
         })).onComplete(new Functionnal.Action<Functionnal.Try<Functionnal.Unit>>() {
@@ -103,6 +107,75 @@ public class StreamsTest {
     }
 
     @Test
+    public void transformerCombine() throws Exception {
+        final List<String> builder = new ArrayList<String>();
+        final Promise<Functionnal.Unit> promise = Promise.create();
+        final ExecutorService ec = Executors.newFixedThreadPool(10);
+        Producer.from(Lists.newArrayList(-12, 123, 1, 2, 3, 12, 13), ec)
+        .filter(new Function<Integer, Boolean>() {
+            @Override
+            public Boolean apply(Integer input) {
+                return input > 0;
+            }
+        }, ec).filterNot(new Function<Integer, Boolean>() {
+            @Override
+            public Boolean apply(Integer input) {
+                return input > 100;
+            }
+        }, ec).collect(new Function<Integer, Functionnal.Option<String>>() {
+            @Override
+            public Functionnal.Option<String> apply(Integer input) {
+                if (input > 10) return Functionnal.Option.none();
+                return Functionnal.Option.some("message : " + input);
+            }
+        }, ec).map(new Function<String, String>() {
+            @Override
+            public String apply(String input) {
+                return input.toUpperCase();
+            }
+        }, ec).consumeWith(Streams.Consumer.foreach(new Function<String, Functionnal.Unit>() {
+            @Override
+            public Functionnal.Unit apply(String input) {
+                builder.add(input);
+                return Functionnal.Unit.unit();
+            }
+        })).onComplete(new Functionnal.Action<Functionnal.Try<Functionnal.Unit>>() {
+            @Override
+            public void call(Functionnal.Try<Functionnal.Unit> unitTry) {
+                promise.tryComplete(unitTry);
+            }
+        });
+        Await.result(promise.future(), 10L, TimeUnit.SECONDS);
+        Assert.assertEquals(3, builder.size());
+        Assert.assertTrue(builder.contains("MESSAGE : 1"));
+        Assert.assertTrue(builder.contains("MESSAGE : 2"));
+        Assert.assertTrue(builder.contains("MESSAGE : 3"));
+    }
+
+    @Test
+    public void collectionMix() throws Exception {
+        final List<String> builder = new ArrayList<String>();
+        final Promise<Functionnal.Unit> promise = Promise.create();
+        final ExecutorService ec = Executors.newFixedThreadPool(4);
+        Streams.Producer.from(Lists.newArrayList("Hello ", "World", "!"), ec)
+                .mergeWith(Streams.Producer.from(Lists.newArrayList("Goodbye ", "World", "!"), ec), ec)
+                .consumeWith(Streams.Consumer.foreach(new Function<String, Functionnal.Unit>() {
+                    @Override
+                    public Functionnal.Unit apply(String input) {
+                        builder.add(input);
+                        return Functionnal.Unit.unit();
+                    }
+                })).onComplete(new Functionnal.Action<Functionnal.Try<Functionnal.Unit>>() {
+            @Override
+            public void call(Functionnal.Try<Functionnal.Unit> unitTry) {
+                promise.tryComplete(unitTry);
+            }
+        });
+        Await.result(promise.future(), 10L, TimeUnit.SECONDS);
+        Assert.assertEquals(6, builder.size());
+    }
+
+    @Test
     public void pushTest() throws Exception {
         final StringBuilder builder = new StringBuilder();
         final Promise<Functionnal.Unit> promise = Promise.create();
@@ -124,11 +197,11 @@ public class StreamsTest {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(200);
                     pusher.push("Hello ");
-                    Thread.sleep(1000);
+                    Thread.sleep(200);
                     pusher.push("World");
-                    Thread.sleep(1000);
+                    Thread.sleep(200);
                     pusher.push("!");
                     pusher.stop();
                 } catch (Exception e) {
