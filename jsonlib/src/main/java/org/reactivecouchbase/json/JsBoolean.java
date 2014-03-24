@@ -38,4 +38,9 @@ public class JsBoolean extends JsValue implements java.lang.Comparable<JsBoolean
     public int hashCode() {
         return value.hashCode();
     }
+
+    @Override
+    public boolean deepEquals(Object o) {
+        return equals(o);
+    }
 }

@@ -192,4 +192,18 @@ public class JsObject extends JsValue implements Iterable<Map.Entry<String, JsVa
         }
         return resultMap;
     }
+
+    @Override
+    public boolean deepEquals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof JsObject)) return false;
+        JsObject object = (JsObject) o;
+        for (Map.Entry<String, JsValue> value : values.entrySet()) {
+            JsValue field = object.field(value.getKey());
+            if (field instanceof JsUndefined) return false;
+            if (field instanceof JsNull) return false;
+            if (!field.deepEquals(value.getValue())) return false;
+        }
+        return true;
+    }
 }

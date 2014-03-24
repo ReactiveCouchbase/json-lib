@@ -92,4 +92,6 @@ public abstract class JsValue implements Serializable {
     public JsonNode toJsonNode() {
         return Jackson.jsValueToJsonNode(this);
     }
+
+    public abstract boolean deepEquals(Object o);
 }

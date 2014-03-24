@@ -30,6 +30,11 @@ public class Syntax {
         public String toString() {
             return "Json(" + value + ")";
         }
+
+        @Override
+        public boolean deepEquals(Object o) {
+            return equals(o);
+        }
     }
 
     /* Helper to create JsValues on the fly */

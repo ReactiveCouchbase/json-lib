@@ -133,6 +133,12 @@ public class JsonTest {
             $( "age", 42 )
         );
 
+        JsObject oldUserJson = Json.obj(
+                $( "name", "John" ),
+                $( "surname", "Doe" ),
+                $( "age", 43 )
+        );
+
         JsObject userJson2 = Json.obj(
             $( "name", "John" ),
             $( "surname", "Doe" )
@@ -151,6 +157,9 @@ public class JsonTest {
         User user = new User("John", "Doe", 42);
         Assert.assertNotSame(userJson, user);
         Assert.assertEquals(userJson, Json.toJson(user));
+        Assert.assertNotEquals(userJson, oldUserJson);
+        Assert.assertTrue(userJson.deepEquals(userJson));
+        Assert.assertFalse(userJson.deepEquals(oldUserJson));
         Assert.assertEquals(userJson, userJson2);
         Assert.assertEquals(userJson2, Json.toJson(user));
         Assert.assertEquals(userJson, userJson3);

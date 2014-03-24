@@ -150,4 +150,25 @@ public class JsArray extends JsValue implements Iterable<JsValue> {
     public int hashCode() {
         return values.hashCode();
     }
+
+    @Override
+    public boolean deepEquals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof JsArray)) return false;
+        JsArray jsArray = (JsArray) o;
+        for (int i = 0; i < size(); i++) {
+            JsValue v1 = get(i);
+            JsValue v2 = jsArray.get(i);
+            if (v1 == null && v2 == null) {
+                // we're good
+            } else if (v1 != null && v2 == null) {
+                return false;
+            } else if (v1 == null && v2 != null) {
+                return false;
+            } else {
+                if (!v1.deepEquals(v2)) return false;
+            }
+        }
+        return true;
+    }
 }

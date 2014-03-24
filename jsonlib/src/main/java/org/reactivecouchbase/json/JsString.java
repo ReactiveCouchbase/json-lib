@@ -39,4 +39,9 @@ public class JsString extends JsValue implements java.lang.Comparable<JsString> 
     public int hashCode() {
         return value.hashCode();
     }
+
+    @Override
+    public boolean deepEquals(Object o) {
+        return equals(o);
+    }
 }

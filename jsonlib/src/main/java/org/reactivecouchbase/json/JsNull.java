@@ -21,4 +21,9 @@ public class JsNull extends JsValue {
     public int hashCode() {
         return 42;
     }
+
+    @Override
+    public boolean deepEquals(Object o) {
+        return equals(o);
+    }
 }

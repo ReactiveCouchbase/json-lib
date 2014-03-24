@@ -68,4 +68,9 @@ public class JsNumber extends JsValue implements java.lang.Comparable<JsNumber> 
     public int hashCode() {
         return value.hashCode();
     }
+
+    @Override
+    public boolean deepEquals(Object o) {
+        return equals(o);
+    }
 }
