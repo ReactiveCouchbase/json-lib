@@ -2,6 +2,9 @@ package org.reactivecouchbase.common;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.sun.istack.internal.Nullable;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -218,6 +221,43 @@ public class Functionnal {
         }
 
         public static <T> Option<T> unit(T value) {
+            return apply(value);
+        }
+
+        public static <A> Option<A> matching(final Object value, Class<A> clazz, Predicate<A> predicate) {
+            if (value == null) return none();
+            Preconditions.checkNotNull(clazz);
+            Preconditions.checkNotNull(predicate);
+            if (clazz.isAssignableFrom(value.getClass())) {
+                A actual = clazz.cast(value);
+                if (predicate.apply(actual)) {
+                    return some(actual);
+                } else {
+                    return none();
+                }
+            }
+            return none();
+        }
+
+        public static <T> Option<T> of( final Object value, final Class<T> clazz) {
+            if (value == null) return none();
+            Preconditions.checkNotNull(clazz);
+            if (clazz.isAssignableFrom(value.getClass())) {
+                return some(clazz.cast(value));
+            }
+            return none();
+        }
+
+        public static <T> Option<T> matching(T value, Predicate<T> predicate) {
+            if (value == null) return none();
+            Preconditions.checkNotNull(predicate);
+            if (predicate.apply(value)) {
+                return some(value);
+            }
+            return none();
+        }
+
+        public static <T> Option<T> any(T value) {
             return apply(value);
         }
     }

@@ -48,6 +48,14 @@ public abstract class JsResult<T> implements Iterable<T> {
 
     public abstract T orError(Throwable t);
 
+    public T recover(Function<JsError, T> block) {
+        if (isSuccess()) {
+            return get();
+        } else {
+            return block.apply(asError().get());
+        }
+    }
+
     private static <T> JsResult<T> populateErrs(JsResult<T> finalResult, JsResult<?>... results) {
         List<Throwable> throwables = new ArrayList<Throwable>();
         for (JsResult<?> res : results) {
