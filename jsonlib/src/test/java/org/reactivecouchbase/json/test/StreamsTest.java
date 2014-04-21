@@ -2,6 +2,7 @@ package org.reactivecouchbase.json.test;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.sun.istack.internal.Nullable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.reactivecouchbase.common.Functionnal;
@@ -9,6 +10,8 @@ import org.reactivecouchbase.concurrent.Await;
 import org.reactivecouchbase.concurrent.Future;
 import org.reactivecouchbase.concurrent.Promise;
 import org.reactivecouchbase.concurrent.Streams;
+import org.reactivecouchbase.streams.RxPublisher;
+import org.reactivecouchbase.streams.RxSubscriber;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +23,118 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.reactivecouchbase.concurrent.Streams.Producer;
 
 public class StreamsTest {
+
+    @Test
+    public void basicTestRxStreams() throws Exception {
+        final AtomicInteger test = new AtomicInteger(0);
+        final Promise<Functionnal.Unit> promise = Promise.create();
+        new RxPublisher<Integer>(Executors.newFixedThreadPool(4)) {
+            AtomicInteger counter = new AtomicInteger(0);
+            @Override
+            public Functionnal.Option<Integer> nextElement() {
+                if (counter.get() < 200) {
+                    return Functionnal.Option.some(counter.incrementAndGet());
+                } else {
+                    stop();
+                    return Functionnal.Option.none();
+                }
+            }
+        }.consumeWith(new RxSubscriber<Integer>() {
+            @Override
+            public void element(Integer elem) {
+                test.addAndGet(elem);
+            }
+        }).onComplete(new Functionnal.Action<Functionnal.Try<Functionnal.Unit>>() {
+            @Override
+            public void call(Functionnal.Try<Functionnal.Unit> unitTry) {
+                promise.tryComplete(unitTry);
+            }
+        });
+        Await.result(promise.future(), 10L, TimeUnit.SECONDS);
+        Assert.assertEquals(20100, test.get());
+    }
+
+    @Test
+    public void rxPushTest() throws Exception {
+        final StringBuilder builder = new StringBuilder();
+        final Promise<Functionnal.Unit> promise = Promise.create();
+        final ExecutorService ec = Executors.newFixedThreadPool(1);
+        final RxPublisher<String> pusher = RxPublisher.pusher(ec);
+        pusher.consumeWith(new RxSubscriber<String>() {
+            @Override
+            public void element(String elem) {
+                builder.append(elem);
+            }
+        }).onComplete(new Functionnal.Action<Functionnal.Try<Functionnal.Unit>>() {
+            @Override
+            public void call(Functionnal.Try<Functionnal.Unit> unitTry) {
+                promise.tryComplete(unitTry);
+            }
+        });
+        ec.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(200);
+                    pusher.push("Hello ");
+                    Thread.sleep(200);
+                    pusher.push("World");
+                    Thread.sleep(200);
+                    pusher.push("!");
+                    pusher.stop();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        Await.result(promise.future(), 10L, TimeUnit.SECONDS);
+        Assert.assertEquals("Hello World!", builder.toString());
+    }
+
+    @Test
+    public void rxCollectionTest2() throws Exception {
+        final StringBuilder builder = new StringBuilder();
+        final Promise<Functionnal.Unit> promise = Promise.create();
+        final ExecutorService ec = Executors.newFixedThreadPool(4);
+        RxPublisher.from(Lists.newArrayList("Hello ", "World", "!"), ec).composeWith(new Function<String, String>() {
+            @Override
+            public String apply(String input) {
+                return input.toUpperCase();
+            }
+        }).consumeWith(new RxSubscriber<String>() {
+            @Override
+            public void element(String elem) {
+                builder.append(elem);
+            }
+        }).onComplete(new Functionnal.Action<Functionnal.Try<Functionnal.Unit>>() {
+            @Override
+            public void call(Functionnal.Try<Functionnal.Unit> unitTry) {
+                promise.tryComplete(unitTry);
+            }
+        });
+        Await.result(promise.future(), 10L, TimeUnit.SECONDS);
+        Assert.assertEquals("HELLO WORLD!", builder.toString());
+    }
+
+    @Test
+    public void rxCollectionTest() throws Exception {
+        final StringBuilder builder = new StringBuilder();
+        final Promise<Functionnal.Unit> promise = Promise.create();
+        final ExecutorService ec = Executors.newFixedThreadPool(4);
+        RxPublisher.from(Lists.newArrayList("Hello ", "World", "!"), ec).consumeWith(new RxSubscriber<String>() {
+            @Override
+            public void element(String elem) {
+                builder.append(elem);
+            }
+        }).onComplete(new Functionnal.Action<Functionnal.Try<Functionnal.Unit>>() {
+            @Override
+            public void call(Functionnal.Try<Functionnal.Unit> unitTry) {
+                promise.tryComplete(unitTry);
+            }
+        });
+        Await.result(promise.future(), 10L, TimeUnit.SECONDS);
+        Assert.assertEquals("Hello World!", builder.toString());
+    }
 
     @Test
     public void basicTest() throws Exception {

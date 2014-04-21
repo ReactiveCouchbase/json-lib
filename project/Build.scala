@@ -36,6 +36,7 @@ object ApplicationBuild extends Build {
       libraryDependencies += "com.fasterxml.jackson.core" % "jackson-annotations" % "2.2.2",
       libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.2.2",
       libraryDependencies += "joda-time" % "joda-time" % "2.2",
+      libraryDependencies += "org.reactivestreams" % "reactive-streams-spi" % "0.3",
       libraryDependencies += "junit" % "junit" % "4.11" % "test",
       libraryDependencies += "com.novocode" % "junit-interface" % "0.9" % "test",
       organization := "org.reactivecouchbase",
