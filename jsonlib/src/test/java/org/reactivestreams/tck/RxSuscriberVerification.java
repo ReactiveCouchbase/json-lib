@@ -1,5 +1,6 @@
 package org.reactivestreams.tck;
 
+import org.reactivecouchbase.common.Functionnal;
 import org.reactivecouchbase.streams.RxPublisher;
 import org.reactivecouchbase.streams.RxSubscriber;
 import org.reactivestreams.spi.Publisher;
@@ -9,6 +10,7 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -63,10 +65,20 @@ public class RxSuscriberVerification extends SubscriberVerification<Integer> {
     }
 
     public Publisher<Integer> createHelperPublisher(final int elements) {
-        List<Integer> list = new ArrayList<Integer>(elements);
-        for (int i = 0; i < elements; i++) {
-            list.add(i);
+        if (elements > 0) {
+            List<Integer> list = new ArrayList<Integer>(elements);
+            for (int i = 0; i < elements; i++) {
+                list.add(i);
+            }
+            return RxPublisher.from(list, ec);
+        } else {
+            final Random random = new Random();
+            return new RxPublisher<Integer>(ec) {
+                @Override
+                public Functionnal.Option<Integer> nextElement() {
+                    return Functionnal.Option.some(random.nextInt(1000));
+                }
+            };
         }
-        return RxPublisher.from(list, ec);
     }
 }

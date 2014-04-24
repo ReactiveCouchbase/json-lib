@@ -8,20 +8,27 @@ import org.reactivestreams.api.Consumer;
 import org.reactivestreams.spi.Subscriber;
 import org.reactivestreams.spi.Subscription;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 public abstract class RxSubscriber<T> implements Subscriber<T>, Consumer<T> {
 
     private final Promise<Functionnal.Unit> promise = new Promise<Functionnal.Unit>();
     private Subscription subscription;
+    private final CountDownLatch latch = new CountDownLatch(1);
 
     @Override
     public final Subscriber<T> getSubscriber() { return this; }
 
     @Override
     public final void onSubscribe(Subscription subscription) {
-        this.subscription = subscription;
-        subscribe(subscription);
+        if (latch.getCount() > 0) {
+            latch.countDown();
+            this.subscription = subscription;
+            subscribe(subscription);
+        } else {
+            //throw new IllegalStateException("Already on an active subscription");
+        }
     }
 
     public void subscribe(Subscription subscription) {}
@@ -39,14 +46,14 @@ public abstract class RxSubscriber<T> implements Subscriber<T>, Consumer<T> {
 
     @Override
     public final void onComplete() {
-        complete();
         promise.trySuccess(Functionnal.Unit.unit());
+        complete();
     }
 
     @Override
     public final void onError(Throwable cause) {
-        error(cause);
         promise.tryFailure(cause);
+        error(cause);
     }
 
     public abstract void element(T elem);

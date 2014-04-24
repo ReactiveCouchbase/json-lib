@@ -57,7 +57,7 @@ public class RxIdentityProcessorVerification extends IdentityProcessorVerificati
 
     @Override
     public Publisher<Integer> createCompletedStatePublisher() {
-        return new RxPublisher<Integer>(ec) {
+        return new RxPublisher<Integer>(RxPublisher.State.COMPLETED, ec) {
             @Override
             public Functionnal.Option<Integer> nextElement() {
                 return Functionnal.Option.none();
@@ -67,7 +67,7 @@ public class RxIdentityProcessorVerification extends IdentityProcessorVerificati
 
     @Override
     public Publisher<Integer> createErrorStatePublisher() {
-        return new RxPublisher<Integer>(ec) {
+        return new RxPublisher<Integer>(RxPublisher.State.ERROR, ec) {
             @Override
             public Functionnal.Option<Integer> nextElement() {
                 return Functionnal.Option.none();
