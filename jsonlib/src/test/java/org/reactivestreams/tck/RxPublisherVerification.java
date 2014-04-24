@@ -14,10 +14,10 @@ import java.util.concurrent.Executors;
 @Test
 public class RxPublisherVerification extends PublisherVerification<Integer> {
 
-    private final ExecutorService ec = Executors.newFixedThreadPool(10);
+    private final ExecutorService ec = Executors.newFixedThreadPool(50);
 
     public RxPublisherVerification() {
-        super(new TestEnvironment(5000), 5000);
+        super(new TestEnvironment(1000), 1000);
     }
 
     @Override
@@ -31,20 +31,28 @@ public class RxPublisherVerification extends PublisherVerification<Integer> {
 
     @Override
     public Publisher<Integer> createCompletedStatePublisher() {
-        return new RxPublisher<Integer>(ec) {
+        return new RxPublisher<Integer>(RxPublisher.State.COMPLETED, ec) {
             @Override
             public Functionnal.Option<Integer> nextElement() {
                 return Functionnal.Option.none();
+            }
+            @Override
+            public String toString() {
+                return "RxPublisher completed";
             }
         };
     }
 
     @Override
     public Publisher<Integer> createErrorStatePublisher() {
-        return new RxPublisher<Integer>(ec) {
+        return new RxPublisher<Integer>(RxPublisher.State.ERROR, ec) {
             @Override
             public Functionnal.Option<Integer> nextElement() {
                 return Functionnal.Option.none();
+            }
+            @Override
+            public String toString() {
+                return "RxPublisher onError";
             }
         };
     }

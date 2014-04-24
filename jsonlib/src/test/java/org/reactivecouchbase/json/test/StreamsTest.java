@@ -91,30 +91,30 @@ public class StreamsTest {
         Assert.assertEquals("Hello World!", builder.toString());
     }
 
-    @Test
-    public void rxCollectionTest2() throws Exception {
-        final StringBuilder builder = new StringBuilder();
-        final Promise<Functionnal.Unit> promise = Promise.create();
-        final ExecutorService ec = Executors.newFixedThreadPool(4);
-        RxPublisher.from(Lists.newArrayList("Hello ", "World", "!"), ec).composeWith(new Function<String, String>() {
-            @Override
-            public String apply(String input) {
-                return input.toUpperCase();
-            }
-        }).consumeWith(new RxSubscriber<String>() {
-            @Override
-            public void element(String elem) {
-                builder.append(elem);
-            }
-        }).onComplete(new Functionnal.Action<Functionnal.Try<Functionnal.Unit>>() {
-            @Override
-            public void call(Functionnal.Try<Functionnal.Unit> unitTry) {
-                promise.tryComplete(unitTry);
-            }
-        });
-        Await.result(promise.future(), 10L, TimeUnit.SECONDS);
-        Assert.assertEquals("HELLO WORLD!", builder.toString());
-    }
+    //@Test
+    //public void rxCollectionTest2() throws Exception {
+    //    final StringBuilder builder = new StringBuilder();
+    //    final Promise<Functionnal.Unit> promise = Promise.create();
+    //    final ExecutorService ec = Executors.newFixedThreadPool(4);
+    //    RxPublisher.from(Lists.newArrayList("Hello ", "World", "!"), ec).composeWith(new Function<String, String>() {
+    //        @Override
+    //        public String apply(String input) {
+    //            return input.toUpperCase();
+    //        }
+    //    }).consumeWith(new RxSubscriber<String>() {
+    //        @Override
+    //        public void element(String elem) {
+    //            builder.append(elem);
+    //        }
+    //    }).onComplete(new Functionnal.Action<Functionnal.Try<Functionnal.Unit>>() {
+    //        @Override
+    //        public void call(Functionnal.Try<Functionnal.Unit> unitTry) {
+    //            promise.tryComplete(unitTry);
+    //        }
+    //    });
+    //    Await.result(promise.future(), 10L, TimeUnit.SECONDS);
+    //    Assert.assertEquals("HELLO WORLD!", builder.toString());
+    //}
 
     @Test
     public void rxCollectionTest() throws Exception {

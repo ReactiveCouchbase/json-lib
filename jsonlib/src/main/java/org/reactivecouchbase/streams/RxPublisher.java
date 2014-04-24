@@ -1,8 +1,6 @@
 package org.reactivecouchbase.streams;
 
-import com.google.common.base.Function;
 import org.reactivecouchbase.common.Functionnal;
-import org.reactivecouchbase.common.UUID;
 import org.reactivecouchbase.concurrent.Future;
 import org.reactivestreams.api.Consumer;
 import org.reactivestreams.api.Producer;
@@ -14,20 +12,42 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class RxPublisher<T> implements Publisher<T>, Producer<T> {
 
-    private final AtomicBoolean hot = new AtomicBoolean(false);
+    public static enum State {
+        INACTIVE, ACTIVE, COMPLETED, ERROR, SHUTDOWN
+    }
+
+    private static enum PublisherState {
+        FULL, DRAINED
+    }
+
+    private final AtomicReference<State> CURRENT_STATE = new AtomicReference<State>(State.INACTIVE);
+    private final AtomicReference<PublisherState> CURRENT_PUBLISHER_STATE = new AtomicReference<PublisherState>(PublisherState.FULL);
     private final ExecutorService ec;
 
     protected RxPublisher(ExecutorService ec) {
         this.ec = ec;
     }
 
+    protected RxPublisher(State state, ExecutorService ec) {
+        this.ec = ec;
+        this.CURRENT_STATE.set(state);
+    }
+
     public abstract Functionnal.Option<T> nextElement();
+
+    @Override
+    public String toString() {
+        return "RxPublisher { " +
+                "CURRENT_STATE: " + CURRENT_STATE.get() +
+                " }";
+    }
 
     @Override
     public Publisher<T> getPublisher() { return this; }
@@ -41,10 +61,14 @@ public abstract class RxPublisher<T> implements Publisher<T>, Producer<T> {
             public Functionnal.Option<T> nextElement() {
                 return null;
             }
+            @Override
+            public String toString() {
+                return "RxPublisher pusher";
+            }
         };
     }
 
-    public static <T> RxPublisher<T> from(Iterable<T> iterable, ExecutorService ec) {
+    public static <T> RxPublisher<T> from(final Iterable<T> iterable, ExecutorService ec) {
         final Iterator<T> it = iterable.iterator();
         return new RxPublisher<T>(ec) {
             @Override
@@ -54,34 +78,11 @@ public abstract class RxPublisher<T> implements Publisher<T>, Producer<T> {
                 }
                 return Functionnal.Option.none();
             }
-        };
-    }
-
-    // map
-    // filter
-    // filterNot
-    // collect
-    // merge
-
-    public <O> RxPublisher<O> composeWith(final Function<T, O> processor) {
-        final RxPublisher<O> pub = new RxPublisher<O>(ec) {
             @Override
-            public Functionnal.Option<O> nextElement() {
-                return null;
+            public String toString() {
+                return "RxPublisher from iterable: " + iterable;
             }
         };
-        consumeWith(new RxSubscriber<T>() {
-            @Override
-            public void element(T elem) {
-                pub.push(processor.apply(elem));
-            }
-        }).onComplete(new Functionnal.Action<Functionnal.Try<Functionnal.Unit>>() {
-            @Override
-            public void call(Functionnal.Try<Functionnal.Unit> unitTry) {
-                pub.stop();
-            }
-        });
-        return pub;
     }
 
     public Future<Functionnal.Unit> consumeWith(RxSubscriber<T> consumer) {
@@ -89,70 +90,135 @@ public abstract class RxPublisher<T> implements Publisher<T>, Producer<T> {
         return consumer.run();
     }
 
-    private final ConcurrentHashMap<String, SubscriberHolder<T>> subscribers =
-            new ConcurrentHashMap<String, SubscriberHolder<T>>();
+    private final ConcurrentHashMap<Subscriber<T>, SubscriberHolder<T>> subscribers =
+            new ConcurrentHashMap<Subscriber<T>, SubscriberHolder<T>>();
+
+    private boolean allDrained() {
+        for (Map.Entry<Subscriber<T>, SubscriberHolder<T>> entry : subscribers.entrySet()) {
+            if (!(entry.getValue().askedElements.get() == 0L)) return false;
+            if (!entry.getValue().queue.isEmpty()) return false;
+        }
+        return true;
+    }
 
     @Override
     public void subscribe(final Subscriber<T> subscriber) {
-        hot.set(true);
-        final String uuid = UUID.generate();
-        subscribers.putIfAbsent(uuid, new SubscriberHolder<T>(subscriber, new ConcurrentLinkedQueue<T>(), new AtomicLong(0L), uuid, ec));
+        if (CURRENT_STATE.get().equals(State.COMPLETED)) {
+            subscriber.onComplete();
+            return;
+        }
+        if (CURRENT_STATE.get().equals(State.ERROR)) {
+            subscriber.onError(new IllegalStateException("The subscriber is in error state"));
+            return;
+        }
+        if (CURRENT_STATE.get().equals(State.SHUTDOWN)) {
+            subscriber.onError(new IllegalStateException("The subscriber is in error state"));
+            return;
+        }
+        for (Map.Entry<Subscriber<T>, SubscriberHolder<T>> entry : subscribers.entrySet()) {
+            if (entry.getKey().equals(subscriber)) {
+                subscriber.onError(new IllegalStateException("The subscriber already subscribed to this publisher"));
+                return;
+            }
+        }
+        subscribers.putIfAbsent(subscriber, new SubscriberHolder<T>(subscriber, new ConcurrentLinkedQueue<T>(), new AtomicLong(0L), ec));
+        final Publisher<T> publisher = this;
         subscriber.onSubscribe(new Subscription() {
 
             @Override
             public void cancel() {
-                subscribers.get(uuid).endOfStream();
-                subscribers.remove(uuid);
+                if (CURRENT_STATE.get().equals(State.ACTIVE) || CURRENT_STATE.get().equals(State.INACTIVE)) {
+                    CURRENT_STATE.set(State.SHUTDOWN);
+                    subscribers.remove(subscriber);
+                }
             }
 
             @Override
             public void requestMore(final int elements) {
-                for (int i = 0; i < elements; i++) {
-                    try {
-                        Functionnal.Option<T> elem = nextElement();
-                        if (elem != null) {
-                            if (elem.isDefined()) {
-                                push(elem.get());
+                CURRENT_STATE.compareAndSet(State.INACTIVE, State.ACTIVE);
+                if (CURRENT_STATE.get().equals(State.ACTIVE) || CURRENT_STATE.get().equals(State.INACTIVE)) {
+                    if (CURRENT_PUBLISHER_STATE.get().equals(PublisherState.DRAINED) && allDrained()) {
+                        CURRENT_STATE.set(State.COMPLETED);
+                        stop();
+                        return;
+                    }
+                    if (elements <= 0) throw new IllegalArgumentException("Nbr of elements should be greater than 0");
+                    display("Asking (" + publisher + " => " + subscriber + ") for " + elements + " elements");
+                    final SubscriberHolder<T> holder = subscribers.get(subscriber);
+                    Future.async(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!CURRENT_PUBLISHER_STATE.get().equals(PublisherState.DRAINED)) {
+                                for (int i = 0; i < elements; i++) {
+                                    try {
+                                        Functionnal.Option<T> elem = nextElement();
+                                        if (elem != null) {
+                                            if (elem.isDefined()) {
+                                                push(elem.get());
+                                            } else {
+                                                CURRENT_PUBLISHER_STATE.set(PublisherState.DRAINED);
+                                            }
+                                        }
+                                    } catch (Throwable t) {
+                                        error(t);
+                                    }
+                                    /*if (CURRENT_STATE.get().equals(State.ACTIVE)) {
+                                        if (!holder.isDrained(CURRENT_PUBLISHER_STATE.get())) {
+                                            T element = holder.poll();
+                                            if (element != null) {
+                                                try {
+                                                    subscriber.onNext(element);
+                                                } catch (Throwable t) {
+                                                    error(t);
+                                                }
+                                            } else {
+                                                subscribers.get(subscriber).ask();
+                                            }
+                                        } else {
+                                            holder.complete();
+                                        }
+                                    }*/
+                                }
+                            }
+                            if (!holder.isDrained(CURRENT_PUBLISHER_STATE.get())) {
+                                for (int i = 0; i < elements; i++) {
+                                    T element = holder.poll();
+                                    if (element != null) {
+                                        try {
+                                            subscriber.onNext(element);
+                                        } catch (Throwable t) {
+                                            error(t);
+                                        }
+                                    } else {
+                                        subscribers.get(subscriber).ask();
+                                    }
+                                }
                             } else {
-                                stop();
+                                if (CURRENT_STATE.get().equals(State.ACTIVE)) holder.complete();
                             }
                         }
-                    } catch (Throwable t) {
-                       error(t);
-                    }
+                    }, ec);
                 }
-                final SubscriberHolder<T> holder = subscribers.get(uuid);
-                Future.async(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (int i = 0; i < elements; i++) {
-                            T element = holder.poll();
-                            if (element != null) {
-                                subscriber.onNext(element);
-                            } else {
-                                subscribers.get(uuid).ask();
-                            }
-                        }
-                    }
-                }, ec);
             }
         });
     }
 
     public void push(T element) {
-        for (Map.Entry<String, SubscriberHolder<T>> entry : subscribers.entrySet()) {
+        for (Map.Entry<Subscriber<T>, SubscriberHolder<T>> entry : subscribers.entrySet()) {
             entry.getValue().push(element);
         }
     }
 
     public final void error(Throwable t) {
-        for (Map.Entry<String, SubscriberHolder<T>> entry : subscribers.entrySet()) {
+        CURRENT_STATE.set(State.ERROR);
+        for (Map.Entry<Subscriber<T>, SubscriberHolder<T>> entry : subscribers.entrySet()) {
             entry.getValue().error(t);
         }
     }
 
     public final void stop() {
-        for (Map.Entry<String, SubscriberHolder<T>> entry : subscribers.entrySet()) {
+        CURRENT_STATE.set(State.SHUTDOWN);
+        for (Map.Entry<Subscriber<T>, SubscriberHolder<T>> entry : subscribers.entrySet()) {
             entry.getValue().stop();
         }
     }
@@ -161,14 +227,13 @@ public abstract class RxPublisher<T> implements Publisher<T>, Producer<T> {
         public final Subscriber<T> subscriber;
         public final ConcurrentLinkedQueue<T> queue;
         public final AtomicLong askedElements;
-        public final String uuid;
         public final ExecutorService ec;
+        public final CountDownLatch latch = new CountDownLatch(1);
 
-        SubscriberHolder(Subscriber<T> subscriber, ConcurrentLinkedQueue<T> queue, AtomicLong askedElements, String uuid, ExecutorService ec) {
+        SubscriberHolder(Subscriber<T> subscriber, ConcurrentLinkedQueue<T> queue, AtomicLong askedElements, ExecutorService ec) {
             this.subscriber = subscriber;
             this.queue = queue;
             this.askedElements = askedElements;
-            this.uuid = uuid;
             this.ec = ec;
         }
 
@@ -177,11 +242,21 @@ public abstract class RxPublisher<T> implements Publisher<T>, Producer<T> {
         }
 
         public void error(Throwable t) {
-            subscriber.onError(t);
+            if (latch.getCount() > 0) {
+                latch.countDown();
+                subscriber.onError(t);
+            }
         }
 
         public void stop() {
-            subscriber.onComplete();
+            if (latch.getCount() > 0) {
+                latch.countDown();
+                subscriber.onComplete();
+            }
+        }
+
+        public boolean isDrained(PublisherState s) {
+            return s.equals(PublisherState.DRAINED) && queue.isEmpty() && askedElements.get() == 0L;
         }
 
         public T poll() {
@@ -192,8 +267,11 @@ public abstract class RxPublisher<T> implements Publisher<T>, Producer<T> {
             askedElements.incrementAndGet();
         }
 
-        public void endOfStream() {
-            subscriber.onComplete();
+        public void complete() {
+            if (latch.getCount() > 0) {
+                latch.countDown();
+                subscriber.onComplete();
+            }
         }
 
         public void push(final T element) {
@@ -209,5 +287,9 @@ public abstract class RxPublisher<T> implements Publisher<T>, Producer<T> {
                 queue.offer(element);
             }
         }
+    }
+
+    public static void display(Object s) {
+        //if (s != null) System.out.println(s);
     }
 }

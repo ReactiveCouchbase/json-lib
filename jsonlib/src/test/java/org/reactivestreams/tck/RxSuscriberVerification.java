@@ -15,11 +15,11 @@ import java.util.concurrent.Executors;
 @Test
 public class RxSuscriberVerification extends SubscriberVerification<Integer> {
 
-    private final ExecutorService ec = Executors.newFixedThreadPool(10);
+    private final ExecutorService ec = Executors.newFixedThreadPool(50);
 
 
     public RxSuscriberVerification() {
-        super(new TestEnvironment(5000));
+        super(new TestEnvironment(1000));
     }
 
     public Subscriber<Integer> createSubscriber(final SubscriberProbe<Integer> probe) {

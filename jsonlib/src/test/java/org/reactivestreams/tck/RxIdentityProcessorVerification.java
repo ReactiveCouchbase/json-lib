@@ -20,10 +20,10 @@ import java.util.concurrent.Executors;
 @Test
 public class RxIdentityProcessorVerification extends IdentityProcessorVerification<Integer> {
 
-    private final ExecutorService ec = Executors.newFixedThreadPool(10);
+    private final ExecutorService ec = Executors.newFixedThreadPool(50);
 
     public RxIdentityProcessorVerification() {
-        super(new TestEnvironment(5000), 5000);
+        super(new TestEnvironment(1000), 1000);
     }
 
     @Override
