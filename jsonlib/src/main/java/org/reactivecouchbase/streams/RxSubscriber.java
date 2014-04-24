@@ -16,12 +16,15 @@ public abstract class RxSubscriber<T> implements Subscriber<T>, Consumer<T> {
     private Subscription subscription;
 
     @Override
-    public Subscriber<T> getSubscriber() { return this; }
+    public final Subscriber<T> getSubscriber() { return this; }
 
     @Override
-    public void onSubscribe(Subscription subscription) {
+    public final void onSubscribe(Subscription subscription) {
         this.subscription = subscription;
+        subscribe(subscription);
     }
+
+    public void subscribe(Subscription subscription) {}
 
     @Override
     public final void onNext(T element) {
@@ -36,20 +39,26 @@ public abstract class RxSubscriber<T> implements Subscriber<T>, Consumer<T> {
 
     @Override
     public final void onComplete() {
+        complete();
         promise.trySuccess(Functionnal.Unit.unit());
     }
 
     @Override
     public final void onError(Throwable cause) {
+        error(cause);
         promise.tryFailure(cause);
     }
 
     public abstract void element(T elem);
 
+    public void error(Throwable t) {}
+
+    public void complete() {}
+
     private static final ExecutorService ec =
             NamedExecutors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), "Subscriber-Starter");
 
-    public Future<Functionnal.Unit> run() {
+    public final Future<Functionnal.Unit> run() {
         Future.async(new Runnable() {
             @Override
             public void run() {

@@ -11,27 +11,25 @@ import java.util.concurrent.ExecutorService;
 
 public abstract class RxProcessor<I, O> implements Processor<I, O> {
 
-    final RxPublisher<O> pub = new RxPublisher<O>(ec) {
-        @Override
-        public Functionnal.Option<O> nextElement() {
-            return null;
-        }
-    };
+    private final RxPublisher<O> pub;
+    private final RxSubscriber<I> sub;
 
-    final RxSubscriber<I> sub = new RxSubscriber<I>() {
-        @Override
-        public void element(I elem) {
-            pub.push(processor.apply(elem));
-        }
-    };
-
-    final Function<I, O> processor;
-    final ExecutorService ec;
-
-    protected RxProcessor(Function<I, O> processor, ExecutorService ec) {
-        this.processor = processor;
-        this.ec = ec;
+    public RxProcessor(final ExecutorService ec) {
+        this.pub = new RxPublisher<O>(ec) {
+            @Override
+            public Functionnal.Option<O> nextElement() {
+                return null;
+            }
+        };
+        this.sub = new RxSubscriber<I>() {
+            @Override
+            public void element(I elem) {
+                pub.push(process(elem));
+            }
+        };
     }
+
+    public abstract O process(I input);
 
     @Override
     public Subscriber<I> getSubscriber() {
