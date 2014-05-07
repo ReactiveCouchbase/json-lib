@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import org.reactivecouchbase.common.Functionnal;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,6 +60,13 @@ public class Json {
 
     public static JsValue parse(String json) {
         return Jackson.parseJsValue(json);
+    }
+    public static Functionnal.Try<JsValue> safeParse(String json) {
+        try {
+            return new Functionnal.Success<JsValue>(Jackson.parseJsValue(json));
+        } catch (Throwable _) {
+            return new Functionnal.Failure<JsValue>(_);
+        }
     }
 
     public static JsObject obj(Iterable<? extends JsObject> objects) {

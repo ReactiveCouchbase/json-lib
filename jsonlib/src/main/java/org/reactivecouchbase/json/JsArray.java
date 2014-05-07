@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -17,11 +18,11 @@ public class JsArray extends JsValue implements Iterable<JsValue> {
 
     public JsArray(List<JsValue> values) {
         if (values == null) throw new IllegalArgumentException("Values can't be null !");
-        this.values = values;
+        this.values = ImmutableList.copyOf(values);
     }
 
     public JsArray() {
-        this.values = new ArrayList<JsValue>();
+        this.values = ImmutableList.of();
     }
 
     public int size() {
@@ -55,28 +56,32 @@ public class JsArray extends JsValue implements Iterable<JsValue> {
 
     public JsArray append(JsArray arr) {
         if (arr == null) return new JsArray(values);
-        List<JsValue> vals = values;
+        List<JsValue> vals = new ArrayList<JsValue>();
+        vals.addAll(values);
         vals.addAll(arr.values);
         return new JsArray(vals);
     }
 
     public JsArray preprend(JsArray arr) {
         if (arr == null) return new JsArray(values);
-        List<JsValue> vals = values;
+        List<JsValue> vals = new ArrayList<JsValue>();
+        vals.addAll(values);
         vals.addAll(0, arr.values);
         return new JsArray(vals);
     }
 
     public JsArray addElement(JsValue arr) {
         if (arr == null) return new JsArray(values);
-        List<JsValue> vals = values;
+        List<JsValue> vals = new ArrayList<JsValue>();
+        vals.addAll(values);
         vals.add(arr);
         return new JsArray(vals);
     }
 
     public JsArray preprendElement(JsValue arr) {
         if (arr == null) return new JsArray(values);
-        List<JsValue> vals = values;
+        List<JsValue> vals = new ArrayList<JsValue>();
+        vals.addAll(values);
         vals.add(0, arr);
         return new JsArray(vals);
     }
@@ -170,5 +175,10 @@ public class JsArray extends JsValue implements Iterable<JsValue> {
             }
         }
         return true;
+    }
+
+    @Override
+    public JsArray cloneNode() {
+        return new JsArray(ImmutableList.copyOf(values));
     }
 }

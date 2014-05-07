@@ -35,6 +35,11 @@ public class Syntax {
         public boolean deepEquals(Object o) {
             return equals(o);
         }
+
+        @Override
+        public JsValue cloneNode() {
+            throw new RuntimeException("Unable to clone JsonFormattedValue");
+        }
     }
 
     /* Helper to create JsValues on the fly */

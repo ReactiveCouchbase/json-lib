@@ -73,4 +73,9 @@ public class JsNumber extends JsValue implements java.lang.Comparable<JsNumber> 
     public boolean deepEquals(Object o) {
         return equals(o);
     }
+
+    @Override
+    public JsNumber cloneNode() {
+        return new JsNumber(value);
+    }
 }

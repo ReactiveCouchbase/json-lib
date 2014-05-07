@@ -26,4 +26,9 @@ public class JsUndefined extends JsValue {
     public boolean deepEquals(Object o) {
         return equals(o);
     }
+
+    @Override
+    public JsUndefined cloneNode() {
+        return Syntax.JSUNDEFINED_INSTANCE;
+    }
 }

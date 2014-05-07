@@ -94,4 +94,6 @@ public abstract class JsValue implements Serializable {
     }
 
     public abstract boolean deepEquals(Object o);
+
+    public abstract JsValue cloneNode();
 }

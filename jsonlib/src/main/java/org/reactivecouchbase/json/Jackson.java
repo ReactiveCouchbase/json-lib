@@ -263,7 +263,7 @@ class Jackson {
                     String key = jp.getCurrentName();
                     jp.nextToken();
                     JsValue val = deserialize(jp, ctx);
-                    object.values.put(key, val);
+                    object = object.add(Syntax.$(key, val));
                 }
                 if (!token.equals(JsonToken.FIELD_NAME)) {
                     jp.nextToken();
@@ -277,7 +277,7 @@ class Jackson {
             JsArray array = new JsArray();
             while(jp.getCurrentToken() != null && !jp.getCurrentToken().equals(JsonToken.END_ARRAY)) {
                 JsValue val = deserialize(jp, ctx);
-                array.values.add(val);
+                array = array.addElement(val);
                 jp.nextToken();
             }
             jp.nextToken();

@@ -26,4 +26,9 @@ public class JsNull extends JsValue {
     public boolean deepEquals(Object o) {
         return equals(o);
     }
+
+    @Override
+    public JsNull cloneNode() {
+        return Syntax.JSNULL_INSTANCE;
+    }
 }

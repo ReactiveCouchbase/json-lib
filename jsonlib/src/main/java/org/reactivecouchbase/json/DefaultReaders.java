@@ -1,5 +1,6 @@
 package org.reactivecouchbase.json;
 
+import com.google.common.collect.ImmutableMap;
 import org.joda.time.DateTime;
 import org.reactivecouchbase.common.Functionnal;
 
@@ -242,7 +243,7 @@ public class DefaultReaders {
         }
     };
 
-    static final Map<Class<?>, CReader<?>> readers = Collections.unmodifiableMap(new HashMap<Class<?>, CReader<?>>() {{
+    static final Map<Class<?>, CReader<?>> readers = ImmutableMap.copyOf(new HashMap<Class<?>, CReader<?>>() {{
         put(JsObject.class, JS_OBJECT_READER);
         put(JsArray.class, JS_ARRAY_READER);
         put(JsBoolean.class, JS_BOOLEAN_READER);

@@ -44,4 +44,9 @@ public class JsString extends JsValue implements java.lang.Comparable<JsString> 
     public boolean deepEquals(Object o) {
         return equals(o);
     }
+
+    @Override
+    public JsString cloneNode() {
+        return new JsString(value);
+    }
 }

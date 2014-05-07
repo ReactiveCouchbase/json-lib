@@ -43,4 +43,9 @@ public class JsBoolean extends JsValue implements java.lang.Comparable<JsBoolean
     public boolean deepEquals(Object o) {
         return equals(o);
     }
+
+    @Override
+    public JsBoolean cloneNode() {
+        return new JsBoolean(value);
+    }
 }

@@ -3,7 +3,10 @@ package org.reactivecouchbase.json;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.reactivecouchbase.common.Functionnal;
 
 import java.util.ArrayList;
@@ -20,11 +23,11 @@ public class JsObject extends JsValue implements Iterable<Map.Entry<String, JsVa
 
     public JsObject(Map<String, JsValue> values) {
         if (values == null) throw new IllegalArgumentException("Values can't be null !");
-        this.values = values;
+        this.values = ImmutableMap.copyOf(values);
     }
 
     public JsObject() {
-        this.values = new HashMap<String, JsValue>();
+        this.values = ImmutableMap.of();
     }
 
     public int nbrOfElements() {
@@ -41,6 +44,11 @@ public class JsObject extends JsValue implements Iterable<Map.Entry<String, JsVa
 
     public boolean notEmpty() {
         return !isEmpty();
+    }
+
+    @Override
+    public JsObject cloneNode() {
+        return new JsObject(ImmutableMap.copyOf(values));
     }
 
     public JsObject merge(JsObject with) {
@@ -80,15 +88,18 @@ public class JsObject extends JsValue implements Iterable<Map.Entry<String, JsVa
 
     public JsObject add(JsObject jsObject) {
         if (jsObject == null) return new JsObject(values);
-        Map<String, JsValue> newValues = values;
+        Map<String, JsValue> newValues = new HashMap<String, JsValue>();
+        newValues.putAll(values);
         newValues.putAll(jsObject.values);
         return new JsObject(newValues);
     }
 
     public JsObject remove(String field) {
         if (field == null) return new JsObject(values);
-        values.remove(field);
-        return new JsObject(values);
+        Map<String, JsValue> newHash = new HashMap<String, JsValue>();
+        newHash.putAll(values);
+        newHash.remove(field);
+        return new JsObject(newHash);
     }
 
     public JsValue field(String field) {
