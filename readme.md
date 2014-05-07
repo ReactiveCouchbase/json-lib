@@ -16,7 +16,8 @@ Then each json type inherit from it :
 
 `JsNumber`, `JsString`, `JsBoolean`, `JsObject`, `JsArray`, `JsUndefined`, `JsNull`
 
-The `Json` class provides the basic functions to create/manipulate json AST.
+The `Json` class provides the basic functions to create/manipulate json AST. `Json` also provides
+methods like `Json.stringify`, `Json.prettyPrint` and `Json.parse` to manipulate Json structures from and to strings.
 
 The `JsValue::as()` method allows you to cast AST elements to specific `JsValue` subtypes or corresponding Java types.
 
