@@ -148,13 +148,21 @@ Reader<User> userReader = new Reader<User>() {
      }
 };
 
-JsResult<T> maybeUser = Json.fromJson(Json.parse(...), userReader);
-for (User user : maybeUser) {
+JsResult<T> userResult = Json.fromJson(Json.parse(...), userReader);
+for (User user : userResult) {
     System.out.println("Yeah user is : " + user.toString());
 }
 
+for (JsError<T> error : userResult.asError()) {
+    System.err.println("Error while reading a user : " + error.firstError());
+}
+
+for (JsSuccess<T> success : userResult.asSucces()) {
+    System.out.println("Yeah user is : " + success.get());
+}
+
 // Java 8 lambda syntax for shorter examples
-maybeUser.filter(user -> user.age > 18).filterNot(user -> user.age < 99).map(user -> {
+userResult.filter(user -> user.age > 18).filterNot(user -> user.age < 99).map(user -> {
     System.out.println("Yeah user is : " + user.toString());
 });
 ```

@@ -15,6 +15,7 @@ public class Syntax {
     /**
      * To wrap already JSON formatted data. Try to avoid it !!!
      */
+    @Deprecated
     public static class JsonFormattedValue extends JsValue {
         public final String value;
 
@@ -147,6 +148,14 @@ public class Syntax {
     }
 
     public static JsNumber number(Long value) {
+        return new JsNumber(value);
+    }
+
+    public static JsNumber number(Short value) {
+        return new JsNumber(value);
+    }
+
+    public static JsNumber number(Float value) {
         return new JsNumber(value);
     }
 

@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class Promise<T> {
 
-    static final ExecutorService INTERNAL_EXECUTION_CONTEXT = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    static final ExecutorService INTERNAL_EXECUTION_CONTEXT = NamedExecutors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), "PROMISE-INTERNAL-EXECUTION-CONTEXT");
 
     final CountDownLatch promiseLock = new CountDownLatch(1);
 
