@@ -31,11 +31,11 @@ object ApplicationBuild extends Build {
     .settings(baseSettings: _*)
     .settings(
       resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-      libraryDependencies += "com.google.guava" % "guava" % "15.0",
-      libraryDependencies += "com.fasterxml.jackson.core" % "jackson-core" % "2.2.2",
-      libraryDependencies += "com.fasterxml.jackson.core" % "jackson-annotations" % "2.2.2",
-      libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.2.2",
-      libraryDependencies += "joda-time" % "joda-time" % "2.2",
+      libraryDependencies += "com.google.guava" % "guava" % "17.0",
+      libraryDependencies += "com.fasterxml.jackson.core" % "jackson-core" % "2.3.2",
+      libraryDependencies += "com.fasterxml.jackson.core" % "jackson-annotations" % "2.3.2",
+      libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.3.2",
+      libraryDependencies += "joda-time" % "joda-time" % "2.3",
       libraryDependencies += "junit" % "junit" % "4.11" % "test",
       libraryDependencies += "com.novocode" % "junit-interface" % "0.9" % "test",
       organization := "org.reactivecouchbase",
