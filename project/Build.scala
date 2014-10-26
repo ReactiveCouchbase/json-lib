@@ -4,7 +4,7 @@ import Keys._
 object ApplicationBuild extends Build {
 
   val appName         = "json-lib"
-  val appVersion      = "0.3-SNAPSHOT"
+  val appVersion      = "0.3"
 
   val local: Project.Initialize[Option[sbt.Resolver]] = version { (version: String) =>
     val localPublishRepo = "./repository"
