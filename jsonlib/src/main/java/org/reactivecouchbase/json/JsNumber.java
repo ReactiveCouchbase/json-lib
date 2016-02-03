@@ -1,45 +1,70 @@
 package org.reactivecouchbase.json;
 
+import org.reactivecouchbase.functional.Option;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public class JsNumber extends JsValue implements java.lang.Comparable<JsNumber> {
-
     public final BigDecimal value;
 
     public JsNumber(BigDecimal value) {
-        if (value == null) throw new IllegalArgumentException("Value can't be null !");
+        if (value == null) {
+            throw new IllegalArgumentException("Value can't be null !");
+        }
         this.value = value;
     }
 
     public JsNumber(BigInteger value) {
-        if (value == null) throw new IllegalArgumentException("Value can't be null !");
+        if (value == null) {
+            throw new IllegalArgumentException("Value can't be null !");
+        }
         this.value = new BigDecimal(value);
     }
 
     public JsNumber(Integer value) {
-        if (value == null) throw new IllegalArgumentException("Value can't be null !");
+        if (value == null) {
+            throw new IllegalArgumentException("Value can't be null !");
+        }
         this.value = BigDecimal.valueOf(value).setScale(0);
     }
 
     public JsNumber(Long value) {
-        if (value == null) throw new IllegalArgumentException("Value can't be null !");
+        if (value == null) {
+            throw new IllegalArgumentException("Value can't be null !");
+        }
         this.value = BigDecimal.valueOf(value).setScale(0);
     }
 
     public JsNumber(Double value) {
-        if (value == null) throw new IllegalArgumentException("Value can't be null !");
+        if (value == null) {
+            throw new IllegalArgumentException("Value can't be null !");
+        }
         this.value = BigDecimal.valueOf(value);
     }
 
     public JsNumber(Float value) {
-        if (value == null) throw new IllegalArgumentException("Value can't be null !");
+        if (value == null) {
+            throw new IllegalArgumentException("Value can't be null !");
+        }
         this.value = BigDecimal.valueOf(value);
     }
 
     public JsNumber(Short value) {
-        if (value == null) throw new IllegalArgumentException("Value can't be null !");
+        if (value == null) {
+            throw new IllegalArgumentException("Value can't be null !");
+        }
         this.value = BigDecimal.valueOf(value).setScale(0);
+    }
+
+    @Override
+    public JsValue querySelector(String query) {
+        return JsUndefined.JSUNDEFINED_INSTANCE;
+    }
+
+    @Override
+    public Option<JsValue> querySelectorOpt(String query) {
+        return Option.none();
     }
 
     @Override
@@ -47,20 +72,28 @@ public class JsNumber extends JsValue implements java.lang.Comparable<JsNumber> 
         return value.compareTo(jsNumber.value);
     }
 
+    @Override
     String toJsonString() {
         return value.toString();
     }
 
+    @Override
     public String toString() {
         return "JsNumber(" + value.toString() + ")";
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof JsNumber)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof JsNumber)) {
+            return false;
+        }
         JsNumber jsNumber = (JsNumber) o;
-        if (!value.equals(jsNumber.value)) return false;
+        if (!value.equals(jsNumber.value)) {
+            return false;
+        }
         return true;
     }
 

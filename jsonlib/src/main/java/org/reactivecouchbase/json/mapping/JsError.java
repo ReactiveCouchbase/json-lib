@@ -1,14 +1,16 @@
-package org.reactivecouchbase.json;
+package org.reactivecouchbase.json.mapping;
 
-import com.google.common.base.Function;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-import org.reactivecouchbase.common.Functionnal;
+import org.reactivecouchbase.common.Throwables;
+import org.reactivecouchbase.functional.Option;
+import org.reactivecouchbase.json.JsArray;
+import org.reactivecouchbase.json.Json;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class JsError<T> extends JsResult<T> {
 
@@ -20,18 +22,26 @@ public class JsError<T> extends JsResult<T> {
     }
 
     @Override
+    public T getValueOrNull() {
+        return null;
+    }
+
+    @Override
     public T getValueOrElse(Throwable result) {
         throw Throwables.propagate(result);
     }
 
-    public Functionnal.Option<JsError<T>> asError() {
-        return Functionnal.Option.some(this);
+    @Override
+    public Option<JsError<T>> asError() {
+        return Option.some(this);
     }
 
-    public Functionnal.Option<JsSuccess<T>> asSuccess() {
-        return Functionnal.Option.none();
+    @Override
+    public Option<JsSuccess<T>> asSuccess() {
+        return Option.none();
     }
 
+    @Override
     public boolean hasErrors() {
         return true;
     }
@@ -62,8 +72,8 @@ public class JsError<T> extends JsResult<T> {
     }
 
     @Override
-    public Functionnal.Option<T> getOpt() {
-        return Functionnal.Option.none();
+    public Option<T> getOpt() {
+        return Option.none();
     }
 
     @Override
@@ -73,28 +83,28 @@ public class JsError<T> extends JsResult<T> {
 
     @Override
     public <B> JsResult<B> map(Function<T, B> map) {
-        return new JsError<B>(errors);
+        return new JsError<>(errors);
     }
 
     @Override
     public <B> JsResult<B> flatMap(Function<T, JsResult<B>> map) {
-        return new JsError<B>(errors);
+        return new JsError<>(errors);
     }
 
     @Override
     public JsResult<T> filter(Function<T, Boolean> predicate) {
-        return new JsError<T>(errors);
+        return new JsError<>(errors);
     }
 
     @Override
     public JsResult<T> filterNot(Function<T, Boolean> predicate) {
-        return new JsError<T>(errors);
+        return new JsError<>(errors);
     }
 
     @Override
     public JsResult<T> filter(Function<T, Boolean> predicate, List<Throwable> errs) {
         JsResult<T> val = this;
-        List<Throwable> thrs = new ArrayList<Throwable>();
+        List<Throwable> thrs = new ArrayList<>();
         thrs.addAll(this.errors);
         if (val.isSuccess() && predicate.apply(val.get())) {
             thrs.addAll(errs);
@@ -105,7 +115,7 @@ public class JsError<T> extends JsResult<T> {
     @Override
     public JsResult<T> filterNot(Function<T, Boolean> predicate, List<Throwable> errs) {
         JsResult<T> val = this;
-        List<Throwable> thrs = new ArrayList<Throwable>();
+        List<Throwable> thrs = new ArrayList<>();
         thrs.addAll(this.errors);
         if (val.isSuccess() && !predicate.apply(val.get())) {
             thrs.addAll(errs);
@@ -116,7 +126,7 @@ public class JsError<T> extends JsResult<T> {
     @Override
     public JsResult<T> filter(Function<T, Boolean> predicate, Throwable error) {
         JsResult<T> val = this;
-        List<Throwable> thrs = new ArrayList<Throwable>();
+        List<Throwable> thrs = new ArrayList<>();
         thrs.addAll(this.errors);
         if (val.isSuccess() && predicate.apply(val.get())) {
             thrs.add(error);
@@ -127,7 +137,7 @@ public class JsError<T> extends JsResult<T> {
     @Override
     public JsResult<T> filterNot(Function<T, Boolean> predicate, Throwable error) {
         JsResult<T> val = this;
-        List<Throwable> thrs = new ArrayList<Throwable>();
+        List<Throwable> thrs = new ArrayList<>();
         thrs.addAll(this.errors);
         if (val.isSuccess() && !predicate.apply(val.get())) {
             thrs.add(error);
@@ -140,7 +150,7 @@ public class JsError<T> extends JsResult<T> {
     }
 
     public JsError(Throwable errors) {
-        this.errors = new ArrayList<Throwable>();
+        this.errors = new ArrayList<>();
         this.errors.add(errors);
     }
 
@@ -161,11 +171,7 @@ public class JsError<T> extends JsResult<T> {
     }
 
     public List<String> errorsAsString() {
-        return Lists.newArrayList(Lists.transform(errors, new Function<Throwable, String>() {
-            public String apply(Throwable throwable) {
-                return throwable.getMessage();
-            }
-        }));
+        return errors.stream().map(Throwable::getMessage).collect(Collectors.toList());
     }
 
     @Override

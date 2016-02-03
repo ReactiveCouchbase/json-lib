@@ -1,19 +1,39 @@
 package org.reactivecouchbase.json;
 
+import org.reactivecouchbase.functional.Option;
+
 public class JsUndefined extends JsValue {
 
+    static final JsUndefined JSUNDEFINED_INSTANCE = new JsUndefined();
+
+    @Override
     String toJsonString() {
         return "undefined";
     }
 
+    @Override
+    public JsValue querySelector(String query) {
+        return JSUNDEFINED_INSTANCE;
+    }
+
+    @Override
+    public Option<JsValue> querySelectorOpt(String query) {
+        return Option.none();
+    }
+
+    @Override
     public String toString() {
         return "JsUndefined()";
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof JsUndefined)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof JsUndefined)) {
+            return false;
+        }
         return true;
     }
 
@@ -29,6 +49,8 @@ public class JsUndefined extends JsValue {
 
     @Override
     public JsUndefined cloneNode() {
-        return Syntax.JSUNDEFINED_INSTANCE;
+        return JSUNDEFINED_INSTANCE;
     }
+
+
 }

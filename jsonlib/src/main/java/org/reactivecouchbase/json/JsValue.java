@@ -1,15 +1,21 @@
 package org.reactivecouchbase.json;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Lists;
-import org.reactivecouchbase.common.Functionnal;
+import org.reactivecouchbase.functional.Option;
+import org.reactivecouchbase.json.mapping.DefaultReaders;
+import org.reactivecouchbase.json.mapping.Format;
+import org.reactivecouchbase.json.mapping.JsError;
+import org.reactivecouchbase.json.mapping.JsResult;
+import org.reactivecouchbase.json.mapping.Reader;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public abstract class JsValue implements Serializable {
-
     public <T extends JsValue> Iterable<T> extractAs(Class<T> clazz) {
         if (is(clazz)) {
             return Collections.singletonList(clazz.cast(this));
@@ -23,6 +29,14 @@ public abstract class JsValue implements Serializable {
 
     abstract String toJsonString();
 
+    public <T> T as(Reader<T> reader) {
+        return reader.read(this).getOpt().get();
+    }
+
+    public <T> T as(Format<T> reader) {
+        return reader.read(this).getOpt().get();
+    }
+
     public <T> T as(Class<T> clazz, Reader<T> reader) {
         return reader.read(this).getOpt().get();
     }
@@ -31,15 +45,119 @@ public abstract class JsValue implements Serializable {
         return asOpt(clazz).get();
     }
 
-    public <T> Functionnal.Option<T> asOpt(Class<T> clazz, Reader<T> reader) {
+    public JsArray asArray() {
+        return this.as(JsArray.class);
+    }
+
+    public JsObject asObject() {
+        return this.as(JsObject.class);
+    }
+
+    public Boolean asBoolean() {
+        return this.as(Boolean.class);
+    }
+
+    public Double asDouble() {
+        return this.as(Double.class);
+    }
+
+    public Integer asInteger() {
+        return this.as(Integer.class);
+    }
+
+    public Long asLong() {
+        return this.as(Long.class);
+    }
+
+    public BigDecimal asBigDecimal() {
+        return this.as(BigDecimal.class);
+    }
+
+    public String asString() {
+        return this.as(String.class);
+    }
+
+    public Option<JsArray> asOptArray() {
+        return this.asOpt(JsArray.class);
+    }
+
+    public Option<JsObject> asOptObject() {
+        return this.asOpt(JsObject.class);
+    }
+
+    public Option<Boolean> asOptBoolean() {
+        return this.asOpt(Boolean.class);
+    }
+
+    public Option<Double> asOptDouble() {
+        return this.asOpt(Double.class);
+    }
+
+    public Option<Integer> asOptInteger() {
+        return this.asOpt(Integer.class);
+    }
+
+    public Option<Long> asOptLong() {
+        return this.asOpt(Long.class);
+    }
+
+    public Option<BigDecimal> asOptBigDecimal() {
+        return this.asOpt(BigDecimal.class);
+    }
+
+    public Option<String> asOptString() {
+        return this.asOpt(String.class);
+    }
+
+    public JsArray array(String field) {
+        return this.field(field).as(JsArray.class);
+    }
+
+    public JsObject object(String field) {
+        return this.field(field).as(JsObject.class);
+    }
+
+    public String string(String field) {
+        return this.field(field).as(String.class);
+    }
+
+    public Integer integer(String field) {
+        return this.field(field).as(Integer.class);
+    }
+
+    public Double dbl(String field) {
+        return this.field(field).as(Double.class);
+    }
+
+    public BigDecimal bigDecimal(String field) {
+        return this.field(field).as(BigDecimal.class);
+    }
+
+    public Long lng(String field) {
+        return this.field(field).as(Long.class);
+    }
+
+    public Boolean bool(String field) {
+        return this.field(field).as(Boolean.class);
+    }
+
+    public <T> Option<T> asOpt(Reader<T> reader) {
         return reader.read(this).getOpt();
     }
 
-    public <T> Functionnal.Option<T> asOpt(Class<T> clazz) {
+    public <T> Option<T> asOpt(Format<T> reader) {
+        return reader.read(this).getOpt();
+    }
+
+    public <T> Option<T> asOpt(Class<T> clazz, Reader<T> reader) {
+        return reader.read(this).getOpt();
+    }
+
+    public <T> Option<T> asOpt(Class<T> clazz) {
         for (Reader<T> reader : DefaultReaders.getReader(clazz)) {
             return reader.read(this).getOpt();
         }
-        return Functionnal.Option.none();
+        return Option.none();
     }
 
     public <T> JsResult<T> read(Class<T> clazz) {
@@ -65,35 +183,68 @@ public abstract class JsValue implements Serializable {
         return false;
     }
 
-    public JsValue field(String field) {
-        return Syntax.JSUNDEFINED_INSTANCE;
+    public JsValue querySelector(String query) {
+        return querySelectorOpt(query).getOrElse(JsUndefined.JSUNDEFINED_INSTANCE);
     }
 
-    public Functionnal.Option<JsValue> fieldAsOpt(String field) {
-        return Functionnal.Option.none();
+    private static final Pattern jsonFieldArraySelector = Pattern.compile("(.+)\\[(\\d)+\\]");
+    private static final Pattern jsonArraySelector = Pattern.compile("\\[(\\d)+\\]");
+    private static final Pattern dotSplitter = Pattern.compile("\\.");
+    private static final Pattern squareBracketSplitter = Pattern.compile("\\[");
+
+    public Option<JsValue> querySelectorOpt(String query) {
+        JsValue currentValue = this;
+        try {
+            String[] partsArray = dotSplitter.split(query);
+            List<String> parts = partsArray == null ? new ArrayList<String>() : Arrays.asList(partsArray);
+            for (String part : parts) {
+                if (jsonFieldArraySelector.matcher(part).matches()) {
+                    String[] subParts = squareBracketSplitter.split(part);
+                    String field = subParts[0];
+                    Integer index = Integer.valueOf(subParts[1].replace("]", ""));
+                    currentValue = currentValue.field(field).asArray().get(index);
+                } else if (part.startsWith("[") && jsonArraySelector.matcher(part).matches()) {
+                    Integer index = Integer.valueOf(part.replace("[", "").replace("]", ""));
+                    currentValue = currentValue.asArray().get(index);
+                } else {
+                    currentValue = currentValue.field(part);
+                }
+            }
+        } catch (Exception e) {
+            return Option.none();
+        }
+        return Option.apply(currentValue);
+    }
+
+    public JsValue field(String field) {
+        return JsUndefined.JSUNDEFINED_INSTANCE;
+    }
+
+    public Option<JsValue> fieldAsOpt(String field) {
+        return Option.none();
     }
 
     public List<JsValue> fields(String fieldName) {
-        return Lists.newArrayList();
-    }
-
-    public JsValue _(String field) {
-        return this.field(field);
-    }
-
-    public List<JsValue> __(String fieldName) {
-        return this.fields(fieldName);
+        return new ArrayList<>();
     }
 
     public JsValue get(int idx) {
-        return Syntax.JSUNDEFINED_INSTANCE;
-    }
-
-    public JsonNode toJsonNode() {
-        return Jackson.jsValueToJsonNode(this);
+        return JsUndefined.JSUNDEFINED_INSTANCE;
     }
 
     public abstract boolean deepEquals(Object o);
 
     public abstract JsValue cloneNode();
+
+    public String stringify() {
+        return Json.stringify(this);
+    }
+
+    public String stringify(boolean pretty) {
+        return pretty ? Json.prettyPrint(this) : Json.stringify(this);
+    }
+
+    public String pretty() {
+        return Json.prettyPrint(this);
+    }
 }

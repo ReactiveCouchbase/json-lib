@@ -1,12 +1,25 @@
 package org.reactivecouchbase.json;
 
-public class JsBoolean extends JsValue implements java.lang.Comparable<JsBoolean> {
+import org.reactivecouchbase.functional.Option;
 
+public class JsBoolean extends JsValue implements java.lang.Comparable<JsBoolean> {
     public final Boolean value;
 
     public JsBoolean(Boolean value) {
-        if (value == null) throw new IllegalArgumentException("Value can't be null !");
+        if (value == null) {
+            throw new IllegalArgumentException("Value can't be null !");
+        }
         this.value = value;
+    }
+
+    @Override
+    public JsValue querySelector(String query) {
+        return JsUndefined.JSUNDEFINED_INSTANCE;
+    }
+
+    @Override
+    public Option<JsValue> querySelectorOpt(String query) {
+        return Option.none();
     }
 
     @Override
@@ -14,6 +27,7 @@ public class JsBoolean extends JsValue implements java.lang.Comparable<JsBoolean
         return value.compareTo(aBoolean.value);
     }
 
+    @Override
     String toJsonString() {
         if (value == null) {
             return Boolean.FALSE.toString();
@@ -21,16 +35,23 @@ public class JsBoolean extends JsValue implements java.lang.Comparable<JsBoolean
         return value.toString();
     }
 
+    @Override
     public String toString() {
         return "JsBoolean(" + value + ")";
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof JsBoolean)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof JsBoolean)) {
+            return false;
+        }
         JsBoolean jsBoolean = (JsBoolean) o;
-        if (!value.equals(jsBoolean.value)) return false;
+        if (!value.equals(jsBoolean.value)) {
+            return false;
+        }
         return true;
     }
 

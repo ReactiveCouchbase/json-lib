@@ -1,40 +1,29 @@
 package org.reactivecouchbase.json;
 
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import org.reactivecouchbase.common.Throwables;
+import org.reactivecouchbase.json.mapping.JsResult;
+import org.reactivecouchbase.json.mapping.Reader;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class JsArray extends JsValue implements Iterable<JsValue> {
-
     public final List<JsValue> values;
 
     public JsArray(List<JsValue> values) {
-        if (values == null) throw new IllegalArgumentException("Values can't be null !");
-        this.values = ImmutableList.copyOf(values);
+        if (values == null) {
+            throw new IllegalArgumentException("Values can't be null !");
+        }
+        this.values = Collections.unmodifiableList(values);
     }
 
     public JsArray() {
-        this.values = ImmutableList.of();
-    }
-
-    public int size() {
-        return values == null ? 0 : values.size();
-    }
-
-    public boolean isEmpty() {
-        return values == null || values.isEmpty();
-    }
-
-    public boolean notEmpty() {
-        return !isEmpty();
+        this.values = Collections.unmodifiableList(new ArrayList<>());
     }
 
     public boolean contains(JsValue value) {
@@ -46,48 +35,57 @@ public class JsArray extends JsValue implements Iterable<JsValue> {
         return values.iterator();
     }
 
+    @Override
     public JsValue get(int idx) {
         try {
             return values.get(idx);
         } catch (Exception e) {
-            return Syntax.JSUNDEFINED_INSTANCE;
+            return JsUndefined.JSUNDEFINED_INSTANCE;
         }
     }
 
     public JsArray append(JsArray arr) {
-        if (arr == null) return new JsArray(values);
-        List<JsValue> vals = new ArrayList<JsValue>();
+        if (arr == null) {
+            return new JsArray(values);
+        }
+        List<JsValue> vals = new ArrayList<>();
         vals.addAll(values);
         vals.addAll(arr.values);
         return new JsArray(vals);
     }
 
     public JsArray preprend(JsArray arr) {
-        if (arr == null) return new JsArray(values);
-        List<JsValue> vals = new ArrayList<JsValue>();
+        if (arr == null) {
+            return new JsArray(values);
+        }
+        List<JsValue> vals = new ArrayList<>();
         vals.addAll(values);
         vals.addAll(0, arr.values);
         return new JsArray(vals);
     }
 
     public JsArray addElement(JsValue arr) {
-        if (arr == null) return new JsArray(values);
-        List<JsValue> vals = new ArrayList<JsValue>();
+        if (arr == null) {
+            return new JsArray(values);
+        }
+        List<JsValue> vals = new ArrayList<>();
         vals.addAll(values);
         vals.add(arr);
         return new JsArray(vals);
     }
 
     public JsArray preprendElement(JsValue arr) {
-        if (arr == null) return new JsArray(values);
-        List<JsValue> vals = new ArrayList<JsValue>();
+        if (arr == null) {
+            return new JsArray(values);
+        }
+        List<JsValue> vals = new ArrayList<>();
         vals.addAll(values);
         vals.add(0, arr);
         return new JsArray(vals);
     }
 
     public JsArray map(Function<JsValue, JsValue> map) {
-        return new JsArray(Lists.newArrayList(Lists.transform(values, map)));
+        return new JsArray(values.stream().map(map).collect(Collectors.toList()));
     }
 
     public <T> List<T> mapWith(Reader<T> reader) {
@@ -118,48 +116,58 @@ public class JsArray extends JsValue implements Iterable<JsValue> {
     }
 
     public JsArray filter(Predicate<JsValue> predicate) {
-        return new JsArray(Lists.newArrayList(Iterables.filter(values, predicate)));
+        return new JsArray(values.stream().filter(predicate).collect(Collectors.toList()));
     }
 
     public JsArray filterNot(final Predicate<JsValue> predicate) {
-        Predicate<JsValue> p = new Predicate<JsValue>() {
-            public boolean apply(JsValue jsValue) {
-                return !predicate.apply(jsValue);
-            }
-        };
-        return new JsArray(Lists.newArrayList(Iterables.filter(values, p)));
+        return new JsArray(values.stream().filter(predicate.negate()).collect(Collectors.toList()));
     }
 
+    @Override
     String toJsonString() {
-        return "[" + Joiner.on(",").join(Lists.transform(values, new Function<JsValue, String>() {
-            public String apply(JsValue jsValue) {
-                return jsValue.toJsonString();
-            }
-        })) + "]";
+        return "[" + values.stream().map(JsValue::toJsonString).collect(Collectors.joining(",")) + "]";
     }
 
+    @Override
     public String toString() {
-        return "JsArray[" + Joiner.on(", ").join(values) + "]";
+        return "JsArray[" + values.stream().map(Object::toString).collect(Collectors.joining(", ")) + "]";
+    }
+
+    public int size() {
+        return values == null ? 0 : values.size();
+    }
+
+    public boolean isEmpty() {
+        return values == null || values.isEmpty();
+    }
+
+    public boolean notEmpty() {
+        return !isEmpty();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof JsArray)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof JsArray)) {
+            return false;
+        }
         JsArray jsArray = (JsArray) o;
-        if (!values.equals(jsArray.values)) return false;
+        if (!values.equals(jsArray.values)) {
+            return false;
+        }
         return true;
     }
 
     @Override
-    public int hashCode() {
-        return values.hashCode();
-    }
-
-    @Override
     public boolean deepEquals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof JsArray)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof JsArray)) {
+            return false;
+        }
         JsArray jsArray = (JsArray) o;
         for (int i = 0; i < size(); i++) {
             JsValue v1 = get(i);
@@ -171,14 +179,21 @@ public class JsArray extends JsValue implements Iterable<JsValue> {
             } else if (v1 == null && v2 != null) {
                 return false;
             } else {
-                if (!v1.deepEquals(v2)) return false;
+                if (!v1.deepEquals(v2)) {
+                    return false;
+                }
             }
         }
         return true;
     }
 
     @Override
+    public int hashCode() {
+        return values.hashCode();
+    }
+
+    @Override
     public JsArray cloneNode() {
-        return new JsArray(ImmutableList.copyOf(values));
+        return new JsArray(new ArrayList<>(values));
     }
 }

@@ -1,17 +1,23 @@
 package org.reactivecouchbase.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import org.reactivecouchbase.common.Functionnal;
+import org.reactivecouchbase.json.mapping.*;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.reactivecouchbase.json.Syntax.$;
 
 public class Json {
+
+    public static JsObject obj(Map<String, ?> objects) {
+        JsObject obj = Json.obj();
+        for (Map.Entry<String, ?> entry : objects.entrySet()) {
+            obj = obj.add($(entry.getKey(), wrap(entry.getValue())));
+        }
+        return obj;
+    }
 
     public static <T> Format<T> format(final Class<T> clazz) {
         final Writer<T> writer = Json.writes(clazz);
@@ -29,29 +35,21 @@ public class Json {
         };
     }
 
-    public static <T> CReader<T> reads(final Class<T> clazz) {
+    public static <T> Reader<T> reads(final Class<T> clazz) {
         if (DefaultReaders.readers.containsKey(clazz)) {
-            return (CReader<T>) DefaultReaders.readers.get(clazz);
+            return (Reader<T>) DefaultReaders.readers.get(clazz);
         }
-        return new CReader<T>() {
-            @Override
-            public JsResult<T> read(JsValue value) {
-                try {
-                    return new JsSuccess<T>(Jackson.fromJson(Jackson.jsValueToJsonNode(value), clazz));
-                } catch (Exception e) {
-                    return new JsError<T>(Collections.<Throwable>singletonList(e));
-                }
+        return value -> {
+            try {
+                return new JsSuccess<T>(Jackson.fromJson(Jackson.jsValueToJsonNode(value), clazz));
+            } catch (Exception e) {
+                return new JsError<T>(Collections.<Throwable>singletonList(e));
             }
         };
     }
 
-    public static <T> CWriter<T> writes(final Class<T> clazz) {
-        return new CWriter<T>() {
-            @Override
-            public JsValue write(T value) {
-                return Jackson.jsonNodeToJsValue(Jackson.toJson(value));
-            }
-        };
+    public static <T> Writer<T> writes(final Class<T> clazz) {
+        return value -> Jackson.jsonNodeToJsValue(Jackson.toJson(value));
     }
 
     public static JsValue toJson(Object o) {
@@ -61,12 +59,15 @@ public class Json {
     public static JsValue parse(String json) {
         return Jackson.parseJsValue(json);
     }
-    public static Functionnal.Try<JsValue> safeParse(String json) {
-        try {
-            return new Functionnal.Success<JsValue>(Jackson.parseJsValue(json));
-        } catch (Throwable _) {
-            return new Functionnal.Failure<JsValue>(_);
-        }
+
+    public static <T> Reader<T> safeReader(final Reader<T> reader) {
+        return value -> {
+            try {
+                return reader.read(value);
+            } catch (Exception e) {
+                return JsResult.error(e);
+            }
+        };
     }
 
     public static JsObject obj(Iterable<? extends JsObject> objects) {
@@ -81,48 +82,39 @@ public class Json {
         return obj(Arrays.asList(objects));
     }
 
-    public static JsObject obj(Map<String, ?> objects) {
-        JsObject obj = Json.obj();
-        for (Map.Entry<String, ?> entry : objects.entrySet()) {
-            obj = obj.add(Syntax.$(entry.getKey(), wrap(entry.getValue())));
-        }
-        return obj;
+    public static JsObject obj() {
+        return obj(new ArrayList<JsObject>());
     }
 
-    public static JsArray array(Iterable<? extends Object> objects) {
-        return new JsArray(Lists.newArrayList(Lists.transform(Lists.newArrayList(objects), new Function<Object, JsValue>() {
-            public JsValue apply(Object o) {
-                return wrap(o);
-            }
-        })));
+    public static <T extends Object> JsArray array(List<T> objects) {
+        return new JsArray(objects.stream().map(Json::wrap).collect(Collectors.toList()));
     }
 
+    @SuppressWarnings("unchecked")
     public static JsArray arr(Object... objects) {
-        if (objects != null && objects.length == 1 && Iterable.class.isAssignableFrom(objects[0].getClass())) {
-            return array((Iterable<Object>) objects[0]);
+        if (objects != null && objects.length == 1 && List.class.isAssignableFrom(objects[0].getClass())) {
+            return array((List<Object>) objects[0]);
         }
         List<Object> objs = Arrays.asList(objects);
         return array(objs);
     }
 
-    public static <T> JsArray arr(Iterable<T> collection, final Writer<T> writer) {
-        return Json.arr(Iterables.transform(collection, new Function<T, JsValue>() {
-            @Override
-            public JsValue apply(T t) {
-                return writer.write(t);
-            }
-        }));
+    public static <T> JsArray arr(List<T> collection, final Writer<T> writer) {
+        return Json.arr(collection.stream().map(writer::write).collect(Collectors.toList()));
     }
 
     public static String stringify(JsValue value) {
-        return Jackson.generateFromJsValue(value);
+        return value.toJsonString();
     }
 
     public static String stringify(JsValue value, boolean pretty) {
-        if (pretty) return prettyPrint(value);
+        if (pretty) {
+            return prettyPrint(value);
+        }
         return stringify(value);
     }
 
+    @SuppressWarnings("unchecked")
     public static JsValue wrap(Object o) {
         return Jackson.jsonNodeToJsValue(Jackson.toJson(o));
     }
@@ -135,8 +127,12 @@ public class Json {
         return reader.read(Json.parse(value));
     }
 
-    public static <T> JsValue toJson(T o, Writer<T> writer) {
+    public static <T, V extends T> JsValue toJson(V o, Writer<T> writer) {
         return writer.write(o);
+    }
+
+    public static <T> JsonNode toJackson(JsValue value) {
+        return Jackson.toJson(value);
     }
 
     public static String prettyPrint(JsValue value) {

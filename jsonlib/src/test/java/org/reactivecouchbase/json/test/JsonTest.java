@@ -1,17 +1,12 @@
 package org.reactivecouchbase.json.test;
 
-import com.google.common.base.Function;
 import org.junit.Assert;
 import org.junit.Test;
 import org.reactivecouchbase.json.*;
-import org.reactivecouchbase.common.Functionnal;
+import org.reactivecouchbase.json.mapping.*;
 
-import static org.reactivecouchbase.common.Functionnal.T3;
-import static org.reactivecouchbase.common.Functionnal.T4;
-import static org.reactivecouchbase.json.JsResult.combine;
-import static org.reactivecouchbase.json.ReaderConstraints.*;
 import static org.reactivecouchbase.json.Syntax.*;
-import static org.reactivecouchbase.json.JsValidator.*;
+import static org.reactivecouchbase.json.mapping.ReaderConstraints.*;
 
 public class JsonTest {
 
@@ -20,7 +15,8 @@ public class JsonTest {
         public String surname;
         public Integer age;
 
-        public User() {}
+        public User() {
+        }
 
         public User(String name, String surname, Integer age) {
             this.name = name;
@@ -111,8 +107,8 @@ public class JsonTest {
     @Test
     public void objectTest() {
         JsObject basicObject1 = Json.obj(
-            $( "key1", "value1" ),
-            $( "key2", "value2" )
+                $("key1", "value1"),
+                $("key2", "value2")
         );
         JsObject basicObject2 = Json.obj(
                 $("key1", "value1"),
@@ -128,27 +124,27 @@ public class JsonTest {
         Assert.assertTrue(Json.prettyPrint(basicObject1).contains("\n"));
 
         JsObject userJson = Json.obj(
-            $( "name", "John" ),
-            $( "surname", "Doe" ),
-            $( "age", 42 )
+                $("name", "John"),
+                $("surname", "Doe"),
+                $("age", 42)
         );
 
         JsObject oldUserJson = Json.obj(
-                $( "name", "John" ),
-                $( "surname", "Doe" ),
-                $( "age", 43 )
+                $("name", "John"),
+                $("surname", "Doe"),
+                $("age", 43)
         );
 
         JsObject userJson2 = Json.obj(
-            $( "name", "John" ),
-            $( "surname", "Doe" )
+                $("name", "John"),
+                $("surname", "Doe")
         );
 
-        JsObject age = Json.obj( $("age", 42) );
+        JsObject age = Json.obj($("age", 42));
 
         JsObject userJson4 = userJson2.merge(age);
 
-        userJson2 = userJson2.add( $("age", 42) );
+        userJson2 = userJson2.add($("age", 42));
 
         JsObject userJson3 = Json.parse("{\"name\":\"John\", \"surname\":\"Doe\", \"age\":42}").as(JsObject.class);
 
@@ -193,39 +189,36 @@ public class JsonTest {
     @Test
     public void readerWriterTest() {
         JsObject userJson = Json.obj(
-            $( "name", "John" ),
-            $( "surname", "Doe" ),
-            $( "age", 42 )
+                $("name", "John"),
+                $("surname", "Doe"),
+                $("age", 42)
         );
         JsObject userJson2 = Json.obj(
-            $( "name", "John" ),
-            $( "surname", "Doe" ),
-            $( "age", 3 )
+                $("name", "John"),
+                $("surname", "Doe"),
+                $("age", 3)
         );
         JsObject userJson3 = Json.obj(
-            $( "name", "John" ),
-            $( "surname", "Doe" ),
-            $( "age", 103 )
+                $("name", "John"),
+                $("surname", "Doe"),
+                $("age", 103)
         );
         JsObject userJson4 = Json.obj(
-            $( "name", "Jane" ),
-            $( "surname", "Doe" ),
-            $( "age", 103 )
+                $("name", "Jane"),
+                $("surname", "Doe"),
+                $("age", 103)
         );
 
-        Reader<User> userReader = new Reader<User>() {
-            @Override
-            public JsResult<User> read(JsValue value) {
-                JsObject object = value.as(JsObject.class);
-                return combine(
-                        object.field("name").read(matches("John", Json.reads(String.class))),
-                        object.field("surname").read(String.class),
-                        object.field("age").read(max( 99, min(18, Json.reads(Integer.class))))
-                ).map(new Function<T3<String, String, Integer>, User>() {
-                    public User apply(T3<String, String, Integer> tuple) {
-                        return new User(tuple._1, tuple._2, tuple._3);
-                    }
-                });
+        Reader<User> userReader = value -> {
+            JsObject object = value.as(JsObject.class);
+            try {
+                return JsResult.success(new User(
+                        object.field("name").read(matches("John")).get(),
+                        object.field("surname").read(String.class).get(),
+                        object.field("age").read(JsValidator.of(Integer.class).and(max(99)).and(min(18))).get()
+                ));
+            } catch (Exception e) {
+                return JsResult.error(e);
             }
         };
         JsResult<User> maybeUser = Json.fromJson(userJson, userReader);
@@ -254,22 +247,18 @@ public class JsonTest {
         Assert.assertTrue(maybeUser4.isErrors());
         Assert.assertFalse(maybeUser4.isSuccess());
         Assert.assertTrue(maybeUser4.hasErrors());
-        Assert.assertEquals(2, maybeUser4.countErrors());
+        Assert.assertEquals(1, maybeUser4.countErrors());
 
-        Writer<User> userWriter = new Writer<User>() {
-            public JsValue write(User user) {
-                return Json.obj(
-                    $("name", user.name.toUpperCase()),
-                    $("surname", user.surname.toUpperCase()),
-                    $("age", user.age)
-                );
-            }
-        };
+        Writer<User> userWriter = user -> Json.obj(
+                $("name", user.name.toUpperCase()),
+                $("surname", user.surname.toUpperCase()),
+                $("age", user.age)
+        );
 
         JsObject userJsonUpper = Json.obj(
-            $( "name", "JOHN" ),
-            $( "surname", "DOE" ),
-            $( "age", 42 )
+                $("name", "JOHN"),
+                $("surname", "DOE"),
+                $("age", 42)
         );
 
         JsObject value = Json.toJson(new User("John", "Doe", 42), userWriter).as(JsObject.class);
@@ -280,39 +269,36 @@ public class JsonTest {
     @Test
     public void combinatorReadersTest() {
         JsObject userJson = Json.obj(
-                $( "name", "John" ),
-                $( "surname", "Doe" ),
-                $( "age", 42 )
+                $("name", "John"),
+                $("surname", "Doe"),
+                $("age", 42)
         );
         JsObject userJson2 = Json.obj(
-                $( "name", "John" ),
-                $( "surname", "Doe" ),
-                $( "age", 3 )
+                $("name", "John"),
+                $("surname", "Doe"),
+                $("age", 3)
         );
         JsObject userJson3 = Json.obj(
-                $( "name", "John" ),
-                $( "surname", "Doe" ),
-                $( "age", 103 )
+                $("name", "John"),
+                $("surname", "Doe"),
+                $("age", 103)
         );
         JsObject userJson4 = Json.obj(
-                $( "name", "Jane" ),
-                $( "surname", "Doe" ),
-                $( "age", 103 )
+                $("name", "Jane"),
+                $("surname", "Doe"),
+                $("age", 103)
         );
 
-        Reader<User> userReader = new Reader<User>() {
-            @Override
-            public JsResult<User> read(JsValue value) {
-                JsObject object = value.as(JsObject.class);
-                return combine(
-                        object.field("name").read(validateWith(String.class, matches("John"))),
-                        object.field("surname").read(String.class),
-                        object.field("age").read(validateWith(Integer.class, min(18), max(99)))
-                ).map(new Function<T3<String, String, Integer>, User>() {
-                    public User apply(T3<String, String, Integer> tuple) {
-                        return new User(tuple._1, tuple._2, tuple._3);
-                    }
-                });
+        Reader<User> userReader = value -> {
+            JsObject object = value.as(JsObject.class);
+            try {
+                return JsResult.success(new User(
+                        object.field("name").read(matches("John")).get(),
+                        object.field("surname").read(String.class).get(),
+                        object.field("age").read(JsValidator.of(Integer.class).and(min(18)).and(max(99))).get()
+                ));
+            } catch (Exception e) {
+                return JsResult.error(e);
             }
         };
         JsResult<User> maybeUser = Json.fromJson(userJson, userReader);
@@ -341,64 +327,64 @@ public class JsonTest {
         Assert.assertTrue(maybeUser4.isErrors());
         Assert.assertFalse(maybeUser4.isSuccess());
         Assert.assertTrue(maybeUser4.hasErrors());
-        Assert.assertEquals(2, maybeUser4.countErrors());
+        Assert.assertEquals(1, maybeUser4.countErrors());
     }
 
     @Test
     public void mergeTest() {
         JsObject expected = Json.obj(
-            $( "key1", "value1" ),
-            $( "key2", "value2" ),
-            $( "key3", 1 ),
-            $( "key4", 2.3 ),
-            $( "key5", Json.obj(
-                $( "key1", "value1" ),
-                $( "key2", "value2" ),
-                $( "key3", Json.arr(
-                    "val1", "val2", 3, Json.obj(
-                        $( "key1", "value1" )
-                    )
+                $("key1", "value1"),
+                $("key2", "value2"),
+                $("key3", 1),
+                $("key4", 2.3),
+                $("key5", Json.obj(
+                        $("key1", "value1"),
+                        $("key2", "value2"),
+                        $("key3", Json.arr(
+                                "val1", "val2", 3, Json.obj(
+                                        $("key1", "value1")
+                                )
+                        ))
                 ))
-            ))
         );
 
         JsObject obj1 = Json.obj(
-            $( "key1", "value1" ),
-            $( "key2", "value2" )
+                $("key1", "value1"),
+                $("key2", "value2")
         );
 
         JsObject obj2 = Json.obj(
-            $( "key3", 1 ),
-            $( "key4", 2.3 )
+                $("key3", 1),
+                $("key4", 2.3)
         );
 
         JsObject obj4 = Json.obj(
-            $( "key5", Json.obj(
-                $( "key1", "value1" ),
-                $( "key2", "value2" ),
-                $( "key3", Json.arr("val1", "val2", 3, Json.obj(
-                            $( "key1", "value1" )
+                $("key5", Json.obj(
+                        $("key1", "value1"),
+                        $("key2", "value2"),
+                        $("key3", Json.arr("val1", "val2", 3, Json.obj(
+                                $("key1", "value1")
+                                )
+                                )
                         )
-                    )
-                )
-            ))
+                ))
         );
 
         JsObject obj5 = Json.obj(
-            $( "key5", Json.obj(
-                $( "key1", "value1" ),
-                $( "key3", Json.arr("val1", "val2", 3, Json.obj(
-                            $( "key1", "value1" )
+                $("key5", Json.obj(
+                        $("key1", "value1"),
+                        $("key3", Json.arr("val1", "val2", 3, Json.obj(
+                                $("key1", "value1")
+                                )
+                                )
                         )
-                    )
-                )
-            ))
+                ))
         );
 
         JsObject obj6 = Json.obj(
-            $( "key5", Json.obj(
-                $( "key2", "value2" )
-            ))
+                $("key5", Json.obj(
+                        $("key2", "value2")
+                ))
         );
 
         System.out.println(Json.stringify(obj4));
@@ -418,20 +404,20 @@ public class JsonTest {
     @Test
     public void deepSearchTest() {
         JsObject deepObject = Json.obj(
-                $( "key1", "value1" ),
-                $( "key2", "value2" ),
-                $( "key3", 1 ),
-                $( "key4", 2.3 ),
-                $( "key5", Json.obj(
-                        $( "key1", "value12" ),
-                        $( "key2", "value22" ),
-                        $( "key3", Json.obj( $("key1", "valueSearched")))
-                )
+                $("key1", "value1"),
+                $("key2", "value2"),
+                $("key3", 1),
+                $("key4", 2.3),
+                $("key5", Json.obj(
+                        $("key1", "value12"),
+                        $("key2", "value22"),
+                        $("key3", Json.obj($("key1", "valueSearched")))
+                        )
                 )
         );
 
         Assert.assertEquals("valueSearched", deepObject.field("key5").field("key3").field("key1").as(String.class));
-        Assert.assertEquals("valueSearched", deepObject._("key5")._("key3")._("key1").as(String.class));
+        Assert.assertEquals("valueSearched", deepObject.field("key5").field("key3").field("key1").as(String.class));
 
         Assert.assertTrue(deepObject.fields("key1").contains(string("value1")));
         Assert.assertTrue(deepObject.fields("key1").contains(string("value1")));
@@ -439,11 +425,11 @@ public class JsonTest {
         Assert.assertTrue(deepObject.fields("key2").contains(string("value2")));
         Assert.assertTrue(deepObject.fields("key2").contains(string("value22")));
 
-        Assert.assertTrue(deepObject.__("key1").contains(string("value1")));
-        Assert.assertTrue(deepObject.__("key1").contains(string("value1")));
-        Assert.assertTrue(deepObject.__("key1").contains(string("valueSearched")));
-        Assert.assertTrue(deepObject.__("key2").contains(string("value2")));
-        Assert.assertTrue(deepObject.__("key2").contains(string("value22")));
+        Assert.assertTrue(deepObject.fields("key1").contains(string("value1")));
+        Assert.assertTrue(deepObject.fields("key1").contains(string("value1")));
+        Assert.assertTrue(deepObject.fields("key1").contains(string("valueSearched")));
+        Assert.assertTrue(deepObject.fields("key2").contains(string("value2")));
+        Assert.assertTrue(deepObject.fields("key2").contains(string("value22")));
     }
 
     public static class Foo {
@@ -463,34 +449,31 @@ public class JsonTest {
     @Test
     public void deepExtractionTest() {
         JsObject deepObject = Json.obj(
-            $( "key1", "value1" ),
-            $( "key2", "value2" ),
-            $( "key3", 1 ),
-            $( "key4", 2.3 ),
-            $( "key5", Json.obj(
-                    $( "key1", "value12" ),
-                    $( "key2", "value22" ),
-                    $( "key3", Json.obj(
-                            $("key1", "valueSearched")
+                $("key1", "value1"),
+                $("key2", "value2"),
+                $("key3", 1),
+                $("key4", 2.3),
+                $("key5", Json.obj(
+                        $("key1", "value12"),
+                        $("key2", "value22"),
+                        $("key3", Json.obj(
+                                $("key1", "valueSearched")
+                                )
                         )
-                    )
+                        )
                 )
-            )
         );
-        Reader<Foo> fooReader = new Reader<Foo>() {
-            @Override
-            public JsResult<Foo> read(JsValue value) {
-                JsObject object = value.as(JsObject.class);
-                return combine(
-                    object._("key1").read(String.class),
-                    object._("key4").read(Double.class),
-                    object._("key5")._("key2").read(String.class),
-                    object._("key5")._("key3")._("key1").read(String.class)
-                ).map(new Function<T4<String, Double, String, String>, Foo>() {
-                    public Foo apply(T4<String, Double, String, String> tuple) {
-                        return new Foo(tuple._1, tuple._2, tuple._3, tuple._4);
-                    }
-                });
+        Reader<Foo> fooReader = value -> {
+            JsObject object = value.as(JsObject.class);
+            try {
+                return JsResult.success(new Foo(
+                        object.field("key1").read(String.class).get(),
+                        object.field("key4").read(Double.class).get(),
+                        object.field("key5").field("key2").read(String.class).get(),
+                        object.field("key5").field("key3").field("key1").read(String.class).get()
+                ));
+            } catch (Exception e) {
+                return JsResult.error(e);
             }
         };
         boolean passes = false;
@@ -507,32 +490,32 @@ public class JsonTest {
     @Test
     public void deepEquals() {
         JsObject expected = Json.obj(
-            $("productId", "123456"),
-            $("price", 20.4),
-            $("vat", 19.6),
-            $("desc", "Some stuff"),
-            $("name", "Stuff")
+                $("productId", "123456"),
+                $("price", 20.4),
+                $("vat", 19.6),
+                $("desc", "Some stuff"),
+                $("name", "Stuff")
         );
         JsObject obj = Json.obj(
-            $("price", 20.4),
-            $("productId", "123456"),
-            $("desc", "Some stuff"),
-            $("name", "Stuff"),
-            $("vat", 19.6)
+                $("price", 20.4),
+                $("productId", "123456"),
+                $("desc", "Some stuff"),
+                $("name", "Stuff"),
+                $("vat", 19.6)
         );
         JsObject wrongobj1 = Json.obj(
-            $("price", 20.4),
-            $("productId", "123456"),
-            $("desc", "Some stff"),
-            $("name", "Stuff"),
-            $("vat", 19.6)
+                $("price", 20.4),
+                $("productId", "123456"),
+                $("desc", "Some stff"),
+                $("name", "Stuff"),
+                $("vat", 19.6)
         );
         JsObject wrongobj2 = Json.obj(
-            $("price", 20.4),
-            $("productId", "123456"),
-            $("desc", "Some stuff"),
-            $("nae", "Stuff"),
-            $("vat", 19.6)
+                $("price", 20.4),
+                $("productId", "123456"),
+                $("desc", "Some stuff"),
+                $("nae", "Stuff"),
+                $("vat", 19.6)
         );
         Assert.assertEquals(expected, obj);
         Assert.assertNotEquals(expected, wrongobj1);
@@ -542,25 +525,25 @@ public class JsonTest {
     @Test
     public void fmtTest() {
         JsValue personJsValue = Json.obj(
-          $("age", 42),
-          $("name", "John"),
-          $("surname", "Doe"),
-          $("address", Json.obj(
-            $("number", "221b"),
-            $("street", "Baker Street"),
-            $("city", "London")
-          ))
+                $("age", 42),
+                $("name", "John"),
+                $("surname", "Doe"),
+                $("address", Json.obj(
+                        $("number", "221b"),
+                        $("street", "Baker Street"),
+                        $("city", "London")
+                ))
         );
 
         JsValue badPersonJsValue = Json.obj(
-          $("name", "John"),
-          $("surname", "Doe"),
-          $("age", 42),
-          $("adresse", Json.obj(
-            $("number", "221b"),
-            $("street", "Baker Street"),
-            $("city", "London")
-          ))
+                $("name", "John"),
+                $("surname", "Doe"),
+                $("age", 42),
+                $("adresse", Json.obj(
+                        $("number", "221b"),
+                        $("street", "Baker Street"),
+                        $("city", "London")
+                ))
         );
 
         String expectedPerson = Json.stringify(personJsValue);
@@ -576,71 +559,75 @@ public class JsonTest {
         public final String number;
         public final String street;
         public final String city;
-        public Address(String number, String street, String city) {
-          this.number = number;
-          this.street = street;
-          this.city = city;
-        }
-        public static final Format<Address> FORMAT =  new Format<Address>() {
-          @Override
-          public JsResult<Address> read(JsValue value) {
-            return combine(
-              value.field("number").read(String.class),
-              value.field("street").read(String.class),
-              value.field("city").read(String.class)
-            ).map(new Function<Functionnal.T3<String, String, String>, Address>() {
-              @Override
-              public Address apply(Functionnal.T3<String, String, String> input) {
-                return new Address(input._1, input._2, input._3);
-              }
-            });
-          }
-          @Override
-          public JsValue write(Address value) {
-            return Json.obj(
-              $("number", value.number),
-              $("street", value.street),
-              $("city", value.city)
-            );
-          }
-        };
-      }
 
-  public static class Person {
-    public final String name;
-    public final String surname;
-    public final Integer age;
-    public final Address address;
-    public Person(String name, String surname, Integer age, Address address) {
-      this.name = name;
-      this.surname = surname;
-      this.age = age;
-      this.address = address;
-    }
-    public static final Format<Person> FORMAT = new Format<Person>() {
-      @Override
-      public JsResult<Person> read(JsValue value) {
-        return combine(
-          value.field("name").read(String.class),
-          value.field("surname").read(String.class),
-          value.field("age").read(Integer.class),
-          value.field("address").read(Address.FORMAT)
-        ).map(new Function<Functionnal.T4<String, String, Integer, Address>, Person>() {
+        public Address(String number, String street, String city) {
+            this.number = number;
+            this.street = street;
+            this.city = city;
+        }
+
+        public static final Format<Address> FORMAT = new Format<Address>() {
             @Override
-            public Person apply(Functionnal.T4<String, String, Integer, Address> input) {
-                return new Person(input._1, input._2, input._3, input._4);
+            public JsResult<Address> read(JsValue value) {
+                try {
+                    return JsResult.success(new Address(
+                            value.field("number").read(String.class).get(),
+                            value.field("street").read(String.class).get(),
+                            value.field("city").read(String.class).get()
+                    ));
+                } catch (Exception e) {
+                    return JsResult.error(e);
+                }
             }
-        });
-      }
-      @Override
-      public JsValue write(Person value) {
-        return Json.obj(
-          $("name", value.name),
-          $("surname", value.surname),
-          $("age", value.age),
-          $("address", Address.FORMAT.write(value.address))
-        );
-      }
-    };
-  }
+
+            @Override
+            public JsValue write(Address value) {
+                return Json.obj(
+                        $("number", value.number),
+                        $("street", value.street),
+                        $("city", value.city)
+                );
+            }
+        };
+    }
+
+    public static class Person {
+        public final String name;
+        public final String surname;
+        public final Integer age;
+        public final Address address;
+
+        public Person(String name, String surname, Integer age, Address address) {
+            this.name = name;
+            this.surname = surname;
+            this.age = age;
+            this.address = address;
+        }
+
+        public static final Format<Person> FORMAT = new Format<Person>() {
+            @Override
+            public JsResult<Person> read(JsValue value) {
+                try {
+                    return JsResult.success(new Person(
+                            value.field("name").read(String.class).get(),
+                            value.field("surname").read(String.class).get(),
+                            value.field("age").read(Integer.class).get(),
+                            value.field("address").read(Address.FORMAT).get()
+                    ));
+                } catch (Exception e) {
+                    return JsResult.error(e);
+                }
+            }
+
+            @Override
+            public JsValue write(Person value) {
+                return Json.obj(
+                        $("name", value.name),
+                        $("surname", value.surname),
+                        $("age", value.age),
+                        $("address", Address.FORMAT.write(value.address))
+                );
+            }
+        };
+    }
 }

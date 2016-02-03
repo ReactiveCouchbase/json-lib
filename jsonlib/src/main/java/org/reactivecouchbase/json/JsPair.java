@@ -4,20 +4,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public class JsPair extends JsObject {
-
     public JsPair(String name, JsValue value) {
         super(Syntax.asMap(name, value));
     }
 
     public JsPair(String name, Long value) {
-        super(Syntax.asMap(name, new JsNumber(value)));
-    }
-
-    public JsPair(String name, Short value) {
-        super(Syntax.asMap(name, new JsNumber(value)));
-    }
-
-    public JsPair(String name, Float value) {
         super(Syntax.asMap(name, new JsNumber(value)));
     }
 
@@ -38,7 +29,7 @@ public class JsPair extends JsObject {
     }
 
     public JsPair(String name) {
-        super(Syntax.asMap(name, Syntax.JSNULL_INSTANCE));
+        super(Syntax.asMap(name, JsNull.JSNULL_INSTANCE));
     }
 
     public JsPair(String name, String value) {
@@ -47,9 +38,5 @@ public class JsPair extends JsObject {
 
     public JsPair(String name, Boolean value) {
         super(Syntax.asMap(name, new JsBoolean(value)));
-    }
-
-    public String toString() {
-        return super.toString();
     }
 }

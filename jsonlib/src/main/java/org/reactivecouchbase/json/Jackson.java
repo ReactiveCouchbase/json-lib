@@ -22,13 +22,13 @@ import com.fasterxml.jackson.databind.deser.Deserializers;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.google.common.base.Throwables;
+import org.reactivecouchbase.common.Throwables;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Map;
 
-class Jackson {
+public class Jackson {
 
     private static ObjectMapper mapper = null;
     private static JsonFactory jsonFactory = null;
@@ -38,7 +38,7 @@ class Jackson {
     }
 
     public static void init(final ClassLoader classLoader) {
-        SimpleModule module = new SimpleModule("reactivecouchbase-json", Version.unknownVersion()) {
+        SimpleModule module = new SimpleModule("json-lib", Version.unknownVersion()) {
             @Override
             public void setupModule(SetupContext setupContext) {
                 setupContext.addDeserializers(new JsDeserializers(classLoader));
@@ -47,6 +47,7 @@ class Jackson {
         };
         mapper = new ObjectMapper().registerModule(module);
         jsonFactory = new JsonFactory(mapper);
+
     }
 
     public static JsonGenerator stringJsonGenerator(StringWriter out) {
@@ -129,7 +130,7 @@ class Jackson {
         }
     }
 
-    private static class JsDeserializers extends Deserializers.Base {
+    public static class JsDeserializers extends Deserializers.Base {
 
         private final ClassLoader classLoader;
 
@@ -147,7 +148,7 @@ class Jackson {
         }
     }
 
-    private static class JsSerializers extends Serializers.Base {
+    public static class JsSerializers extends Serializers.Base {
         @Override
         public JsonSerializer<?> findSerializer(SerializationConfig serializationConfig, JavaType javaType, BeanDescription beanDescription) {
             if (JsValue.class.isAssignableFrom(beanDescription.getBeanClass())) {
@@ -170,10 +171,10 @@ class Jackson {
             for (JsBoolean bool : value.asOpt(JsBoolean.class)) {
                 json.writeBoolean(bool.value);
             }
-            for (JsNull _ : value.asOpt(JsNull.class)) {
+            for (JsNull nevermind : value.asOpt(JsNull.class)) {
                 json.writeNull();
             }
-            for (JsUndefined _ : value.asOpt(JsUndefined.class)) {
+            for (JsUndefined nevermind : value.asOpt(JsUndefined.class)) {
                 json.writeNull();
             }
             for (JsArray array : value.asOpt(JsArray.class)) {
@@ -206,12 +207,12 @@ class Jackson {
 
         @Override
         public boolean isCachable() {
-            return true;
+            return false;
         }
 
         @Override
         public JsValue getNullValue() {
-            return Syntax.JSNULL_INSTANCE;
+            return JsNull.JSNULL_INSTANCE;
         }
 
         @Override
@@ -234,7 +235,7 @@ class Jackson {
                 value = new JsBoolean(false);
             }
             if (token.equals(JsonToken.VALUE_NULL)) {
-                value = Syntax.JSNULL_INSTANCE;
+                value = JsNull.JSNULL_INSTANCE;
             }
             if (token.equals(JsonToken.VALUE_EMBEDDED_OBJECT)) {
                 jp.nextToken();
@@ -269,7 +270,6 @@ class Jackson {
                     jp.nextToken();
                 }
             }
-            //jp.nextToken();
             return object;
         }
 
@@ -278,9 +278,7 @@ class Jackson {
             while(jp.getCurrentToken() != null && !jp.getCurrentToken().equals(JsonToken.END_ARRAY)) {
                 JsValue val = deserialize(jp, ctx);
                 array = array.addElement(val);
-                jp.nextToken();
             }
-            jp.nextToken();
             return array;
         }
     }

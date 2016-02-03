@@ -1,19 +1,38 @@
 package org.reactivecouchbase.json;
 
-public class JsNull extends JsValue {
+import org.reactivecouchbase.functional.Option;
 
+public class JsNull extends JsValue {
+    static final JsNull JSNULL_INSTANCE = new JsNull();
+
+    @Override
+    public JsValue querySelector(String query) {
+        return JsUndefined.JSUNDEFINED_INSTANCE;
+    }
+
+    @Override
+    public Option<JsValue> querySelectorOpt(String query) {
+        return Option.none();
+    }
+
+    @Override
     String toJsonString() {
         return "null";
     }
 
+    @Override
     public String toString() {
         return "JsNull()";
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof JsNull)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof JsNull)) {
+            return false;
+        }
         return true;
     }
 
@@ -29,6 +48,6 @@ public class JsNull extends JsValue {
 
     @Override
     public JsNull cloneNode() {
-        return Syntax.JSNULL_INSTANCE;
+        return JSNULL_INSTANCE;
     }
 }
