@@ -43,7 +43,6 @@ object ApplicationBuild extends Build {
       publishTo <<= local,
       publishMavenStyle := true,
       publishArtifact in Test := false,
-      pomIncludeRepository := { _ => false }//,
-      //testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v")
+      pomIncludeRepository := { _ => false }
     )
 }

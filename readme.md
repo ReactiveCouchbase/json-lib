@@ -1,5 +1,4 @@
-JsonLib
-======================================
+# JsonLib
 
 Highly inspired and copied from @mandubian (Pascal Voitot) Json lib for Play 2 Scala
 
