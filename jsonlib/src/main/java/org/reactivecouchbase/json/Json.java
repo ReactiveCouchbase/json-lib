@@ -2,9 +2,11 @@ package org.reactivecouchbase.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.reactivecouchbase.json.mapping.*;
+import org.reactivecouchbase.validation.Rule;
+import org.reactivecouchbase.validation.Validation;
+import org.reactivecouchbase.validation.ValidationError;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.reactivecouchbase.json.Syntax.$;
@@ -125,6 +127,14 @@ public class Json {
 
     public static <T> JsResult<T> fromJson(String value, Reader<T> reader) {
         return reader.read(Json.parse(value));
+    }
+
+    public static <T> Validation<T, ValidationError> fromJson(JsValue value, Rule<JsValue, T> reader) {
+        return reader.validate(value);
+    }
+
+    public static <T> Validation<T, ValidationError> fromJson(String value, Rule<JsValue, T> reader) {
+        return reader.validate(Json.parse(value));
     }
 
     public static <T, V extends T> JsValue toJson(V o, Writer<T> writer) {

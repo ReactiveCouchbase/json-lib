@@ -6,6 +6,9 @@ import org.reactivecouchbase.json.mapping.Format;
 import org.reactivecouchbase.json.mapping.JsError;
 import org.reactivecouchbase.json.mapping.JsResult;
 import org.reactivecouchbase.json.mapping.Reader;
+import org.reactivecouchbase.validation.Rule;
+import org.reactivecouchbase.validation.Validation;
+import org.reactivecouchbase.validation.ValidationError;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -173,6 +176,14 @@ public abstract class JsValue implements Serializable {
 
     public <T> JsResult<T> validate(Reader<T> reader) {
         return reader.read(this);
+    }
+
+    public <T> Validation<T, ValidationError> validate(Rule<JsValue, T> rule) {
+        return rule.validate(this);
+    }
+
+    public <T> Validation<T, ValidationError> read(Rule<JsValue, T> rule) {
+        return rule.validate(this);
     }
 
     public <A extends JsValue> JsResult<A> transform(Reader<A> reader) {

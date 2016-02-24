@@ -6,6 +6,10 @@ import org.reactivecouchbase.json.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -143,6 +147,36 @@ public class DefaultReaders {
         }
         return new JsError<>(new IllegalAccessError("Not a JsString"));
     };
+    public static final Reader<LocalTime> LOCAL_TIME_READER = value -> {
+        if (value.is(JsString.class)) {
+            try {
+                return new JsSuccess<>(LocalTime.from(DateTimeFormatter.ISO_LOCAL_TIME.parse(value.as(String.class))));
+            } catch (Exception e) {
+                return new JsError<>(e);
+            }
+        }
+        return new JsError<>(new IllegalAccessError("Not a JsString"));
+    };
+    public static final Reader<LocalDate> LOCAL_DATE_READER = value -> {
+        if (value.is(JsString.class)) {
+            try {
+                return new JsSuccess<>(LocalDate.from(DateTimeFormatter.ISO_LOCAL_DATE.parse(value.as(String.class))));
+            } catch (Exception e) {
+                return new JsError<>(e);
+            }
+        }
+        return new JsError<>(new IllegalAccessError("Not a JsString"));
+    };
+    public static final Reader<LocalDateTime> LOCAL_DATE_TIME_READER = value -> {
+        if (value.is(JsString.class)) {
+            try {
+                return new JsSuccess<>(LocalDateTime.from(DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(value.as(String.class))));
+            } catch (Exception e) {
+                return new JsError<>(e);
+            }
+        }
+        return new JsError<>(new IllegalAccessError("Not a JsString"));
+    };
     public static final Reader<JsValue> JSVALUE_READER = JsSuccess::new;
     public static final Map<Class<?>, Reader<?>> readers = new HashMap<Class<?>, Reader<?>>() {{
         put(JsObject.class, JS_OBJECT_READER);
@@ -162,5 +196,8 @@ public class DefaultReaders {
         put(BigInteger.class, BIGINT_READER);
         put(JsValue.class, JSVALUE_READER);
         put(DateTime.class, DATETIME_READER);
+        put(LocalTime.class, LOCAL_TIME_READER);
+        put(LocalDate.class, LOCAL_DATE_READER);
+        put(LocalDateTime.class, LOCAL_DATE_TIME_READER);
     }};
 }

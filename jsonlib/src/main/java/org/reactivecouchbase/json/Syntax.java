@@ -4,6 +4,8 @@ import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +52,48 @@ public class Syntax {
             return nul(name);
         }
         return new JsPair(name, value.toString(format));
+    }
+
+    public static JsPair $(String name, java.time.LocalDate value, String format) {
+        if (value == null) {
+            return nul(name);
+        }
+        return new JsPair(name, value.format(DateTimeFormatter.ofPattern(format)));
+    }
+
+    public static JsPair $(String name, java.time.LocalDate value, DateTimeFormatter format) {
+        if (value == null) {
+            return nul(name);
+        }
+        return new JsPair(name, value.format(format));
+    }
+
+    public static JsPair $(String name, java.time.LocalTime value, String format) {
+        if (value == null) {
+            return nul(name);
+        }
+        return new JsPair(name, value.format(DateTimeFormatter.ofPattern(format)));
+    }
+
+    public static JsPair $(String name, java.time.LocalTime value, DateTimeFormatter format) {
+        if (value == null) {
+            return nul(name);
+        }
+        return new JsPair(name, value.format(format));
+    }
+
+    public static JsPair $(String name, LocalDateTime value, String format) {
+        if (value == null) {
+            return nul(name);
+        }
+        return new JsPair(name, value.format(DateTimeFormatter.ofPattern(format)));
+    }
+
+    public static JsPair $(String name, LocalDateTime value, DateTimeFormatter format) {
+        if (value == null) {
+            return nul(name);
+        }
+        return new JsPair(name, value.format(format));
     }
 
     public static JsPair $(String name, Long value) {
