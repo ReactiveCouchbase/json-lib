@@ -20,12 +20,16 @@ import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.Deserializers;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.BigIntegerNode;
+import com.fasterxml.jackson.databind.node.DecimalNode;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.reactivecouchbase.common.Throwables;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Map;
 
 public class Jackson {
@@ -160,10 +164,31 @@ public class Jackson {
 
     private static class JsValueSerializer extends JsonSerializer<JsValue> {
 
+        // Maximum magnitude of BigDecimal to write out as a plain string
+        private static final BigDecimal MaxPlain = new BigDecimal(1e20);
+        // Minimum magnitude of BigDecimal to write out as a plain string
+        private static final BigDecimal MinPlain = new BigDecimal(1e-10);
+
         @Override
         public void serialize(JsValue value, JsonGenerator json, SerializerProvider provider) throws IOException, JsonProcessingException {
             for (JsNumber number : value.asOpt(JsNumber.class)) {
-                json.writeNumber(number.value);
+                // Workaround  Same behaviour as if JsonGenerator were
+                // configured with WRITE_BIGDECIMAL_AS_PLAIN, but forced as this
+                // configuration is ignored when called from ObjectMapper.valueToTree
+                BigDecimal v = number.value;
+                BigDecimal va = v.abs();
+                boolean shouldWritePlain = va.compareTo(MaxPlain) < 0 && va.compareTo(MinPlain) > 0;
+                BigDecimal stripped = v.stripTrailingZeros();
+                String raw = stripped.toString();
+                if (shouldWritePlain) {
+                    raw = stripped.toPlainString();
+                }
+                if (raw.indexOf('E') < 0 && raw.indexOf('.') < 0) {
+                    json.writeTree(new BigIntegerNode(new BigInteger(raw)));
+                } else {
+                    json.writeTree(new DecimalNode(new BigDecimal(raw)));
+                }
+                // json.writeNumber(number.value);
             }
             for (JsString str : value.asOpt(JsString.class)) {
                 json.writeString(str.value);
