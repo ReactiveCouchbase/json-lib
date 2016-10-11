@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.reactivecouchbase.json.*;
 import org.reactivecouchbase.json.mapping.*;
 
+import java.math.BigDecimal;
+
 import static org.reactivecouchbase.json.Syntax.*;
 import static org.reactivecouchbase.json.mapping.ReaderConstraints.*;
 
@@ -69,6 +71,13 @@ public class JsonTest {
             result = 31 * result + age.hashCode();
             return result;
         }
+    }
+
+    @Test
+    public void checkNumbers() {
+        JsValue value = Json.obj().with("value", new BigDecimal("12334535345456700.12345634534534578901"));
+        String str = Json.stringify(value);
+        Assert.assertEquals("{\"value\":12334535345456700.12345634534534578901}", str);
     }
 
     @Test

@@ -4,6 +4,7 @@ import org.reactivecouchbase.functional.Option;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
 
 public class JsNumber extends JsValue implements java.lang.Comparable<JsNumber> {
     public final BigDecimal value;
@@ -74,12 +75,12 @@ public class JsNumber extends JsValue implements java.lang.Comparable<JsNumber> 
 
     @Override
     String toJsonString() {
-        return value.toString();
+        return value.toPlainString();
     }
 
     @Override
     public String toString() {
-        return "JsNumber(" + value.toString() + ")";
+        return "JsNumber(" + value.toPlainString() + ")";
     }
 
     @Override
