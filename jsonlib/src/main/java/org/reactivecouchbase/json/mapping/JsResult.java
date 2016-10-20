@@ -100,6 +100,14 @@ public abstract class JsResult<T> implements Iterable<T> {
         }
     }
 
+    public <R> R fold(Function<JsError, R> onError, Function<T, R> onSuccess) {
+        if(isSuccess()) {
+            return onSuccess.apply(get());
+        } else {
+            return onError.apply(asError().get());
+        }
+    }
+
     private static <T> JsResult<T> populateErrs(JsResult<T> finalResult, JsResult<?>... results) {
         List<Throwable> throwables = new ArrayList<>();
         for (JsResult<?> res : results) {

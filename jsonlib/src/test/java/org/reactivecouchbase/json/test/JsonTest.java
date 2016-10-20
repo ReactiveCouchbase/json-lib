@@ -568,6 +568,26 @@ public class JsonTest {
         Assert.assertTrue(Json.parse(badPerson).validate(Person.FORMAT).isErrors());
     }
 
+
+    @Test
+    public void foldErrorTest() {
+        Throwable throwable = new RuntimeException("Oups");
+        JsResult<Person> error = JsResult.error(throwable);
+
+        String fold = error.fold(err -> "ERR", person -> "OK");
+        Assert.assertEquals("ERR", fold);
+    }
+
+    @Test
+    public void foldSuccessTest() {
+        Person person = new Person("Rambo", "John", 30, null);
+        JsResult<Person> error = JsResult.success(person);
+
+        String fold = error.fold(err -> "ERR", p -> "OK");
+        Assert.assertEquals("OK", fold);
+    }
+
+
     public static class Address {
         public final String number;
         public final String street;

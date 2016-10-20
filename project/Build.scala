@@ -31,6 +31,7 @@ object ApplicationBuild extends Build {
     .settings(baseSettings: _*)
     .settings(
       resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
+      resolvers += "Reactive couchbase" at "https://raw.github.com/ReactiveCouchbase/repository/master/snapshots/",
       libraryDependencies += "com.fasterxml.jackson.core" % "jackson-core" % "2.7.1",
       libraryDependencies += "com.fasterxml.jackson.core" % "jackson-annotations" % "2.7.1",
       libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.7.1",
