@@ -69,6 +69,17 @@ public abstract class JsResult<T> implements Iterable<T> {
         return new JsSuccess<>(t);
     }
 
+    public <X> X fold(Function<JsError<T>, X> onError, Function<JsSuccess<T>, X> onSuccess) {
+        if (isErrors()) {
+            return onError.apply(this.toError());
+        }
+        return onSuccess.apply(this.toSuccess());
+    }
+
+    public <X> X transform(Function<JsResult<T>, X> trans) {
+        return trans.apply(this);
+    }
+
     public Option<Throwable> onError() {
         if (isErrors()) {
             return Option.some(asError().get().firstError());
